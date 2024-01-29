@@ -1,4 +1,5 @@
-import { appActions } from "@/state";
+import { handleKeyPress } from "@/state";
+import { throttle } from "@/utils";
 import { useEffect, type FC, type ReactNode } from "react";
 
 interface Props {
@@ -8,22 +9,14 @@ interface Props {
 
 const RootWrapper: FC<Props> = ({ children, className }) => {
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      switch (event.key) {
-        case "t":
-          appActions.toggleTheme();
-          break;
+    const onKeyPress = throttle((e: KeyboardEvent) => {
+      handleKeyPress(e.key);
+    }, 200);
 
-        default:
-          console.log("--> Unmapped key:", event.key);
-          break;
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyPress);
+    document.addEventListener("keydown", onKeyPress);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyPress);
+      document.removeEventListener("keydown", onKeyPress);
     };
   }, []);
 
