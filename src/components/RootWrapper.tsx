@@ -1,6 +1,7 @@
-import { handleKeyPress } from "@/state";
+import { appState, handleKeyPress } from "@/state";
 import { throttle } from "@/utils";
 import { useEffect, type FC, type ReactNode } from "react";
+import { useSnapshot } from "valtio";
 
 interface Props {
   children: ReactNode;
@@ -8,6 +9,8 @@ interface Props {
 }
 
 const RootWrapper: FC<Props> = ({ children, className }) => {
+  const themeSnap = useSnapshot(appState).theme;
+
   useEffect(() => {
     const onKeyPress = throttle((e: KeyboardEvent) => {
       handleKeyPress(e.key);
@@ -19,6 +22,11 @@ const RootWrapper: FC<Props> = ({ children, className }) => {
       document.removeEventListener("keydown", onKeyPress);
     };
   }, []);
+
+  useEffect(() => {
+    document.body.classList.remove("light", "dark");
+    document.body.classList.add(themeSnap);
+  }, [themeSnap]);
 
   return (
     <div

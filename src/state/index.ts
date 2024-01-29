@@ -10,10 +10,8 @@ export interface AppState {
 export const appState = proxy<AppState>({
   theme: (function (): Theme {
     const storedTheme = localStorage.getItem("vimnote_theme");
-    if (storedTheme) {
-      return JSON.parse(storedTheme);
-    }
-    return "dark";
+    const theme: Theme = storedTheme ? JSON.parse(storedTheme) : "dark";
+    return theme;
   })(),
   cheatsheet: false,
 });
@@ -21,8 +19,6 @@ export const appState = proxy<AppState>({
 export const appActions = {
   toggleTheme: () => {
     appState.theme = appState.theme === "dark" ? "light" : "dark";
-    document.body.classList.remove("light", "dark");
-    document.body.classList.add(appState.theme);
     localStorage.setItem("vimnote_theme", JSON.stringify(appState.theme));
   },
   toggleCheatsheet: () => (appState.cheatsheet = !appState.cheatsheet),
@@ -41,6 +37,7 @@ export const handleKeyPress = (key: string) => {
       break;
 
     case Keymap.Cheatsheet:
+      console.log("--> Toggle cheat sheet");
       break;
 
     default:
