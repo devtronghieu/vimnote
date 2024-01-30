@@ -24,7 +24,7 @@ const Theme: FC<Props> = ({ children, className }) => {
 
   return (
     <div
-      className={`dark:bg-black dark:text-white duration-500 transition-colors ease-in-out ${className}`}
+      className={`bg-white dark:bg-black text-black dark:text-white duration-500 transition-colors ease-in-out ${className}`}
     >
       {children}
     </div>
