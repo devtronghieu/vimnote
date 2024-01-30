@@ -2,14 +2,20 @@ import { proxy } from "valtio";
 
 export type Theme = "light" | "dark";
 
+export enum PluginModal {
+  Cheatsheet,
+}
+
 export interface AppState {
   theme: Theme;
-  cheatsheet: boolean;
+  modals: Record<PluginModal, boolean>;
 }
 
 export const appState = proxy<AppState>({
   theme: "dark",
-  cheatsheet: false,
+  modals: {
+    [PluginModal.Cheatsheet]: false,
+  },
 });
 
 export const appActions = {
@@ -17,7 +23,10 @@ export const appActions = {
     appState.theme = appState.theme === "dark" ? "light" : "dark";
     localStorage.setItem("vimnote_theme", JSON.stringify(appState.theme));
   },
-  toggleCheatsheet: () => (appState.cheatsheet = !appState.cheatsheet),
+  toggleCheatsheet: () => {
+    appState.modals[PluginModal.Cheatsheet] =
+      !appState.modals[PluginModal.Cheatsheet];
+  },
 };
 
 export enum Keymap {

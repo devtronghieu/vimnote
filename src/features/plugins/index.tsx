@@ -13,7 +13,7 @@ const PluginProvider: FC<Props> = ({ children, className }) => {
   useEffect(() => {
     const onKeyPress = throttle((e: KeyboardEvent) => {
       handleKeyPress(e.key);
-    }, 200);
+    }, 300);
 
     document.addEventListener("keydown", onKeyPress);
 
