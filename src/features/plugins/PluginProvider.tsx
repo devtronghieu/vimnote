@@ -8,8 +8,8 @@ interface Props {
   className?: string;
 }
 
-const RootWrapper: FC<Props> = ({ children, className }) => {
-  const themeSnap = useSnapshot(appState).theme;
+const PluginProvider: FC<Props> = ({ children, className }) => {
+  const snap = useSnapshot(appState);
 
   useEffect(() => {
     const onKeyPress = throttle((e: KeyboardEvent) => {
@@ -25,8 +25,8 @@ const RootWrapper: FC<Props> = ({ children, className }) => {
 
   useEffect(() => {
     document.body.classList.remove("light", "dark");
-    document.body.classList.add(themeSnap);
-  }, [themeSnap]);
+    document.body.classList.add(snap.theme);
+  }, [snap.theme]);
 
   return (
     <div
@@ -37,4 +37,4 @@ const RootWrapper: FC<Props> = ({ children, className }) => {
   );
 };
 
-export default RootWrapper;
+export default PluginProvider;
