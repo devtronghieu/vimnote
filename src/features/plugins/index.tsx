@@ -2,6 +2,7 @@ import { handleKeyPress } from "@/state";
 import { throttle } from "@/utils";
 import { useEffect, type FC, type ReactNode } from "react";
 import Theme from "./Theme";
+import Cheatsheet from "./Cheatsheet";
 
 interface Props {
   children: ReactNode;
@@ -21,7 +22,12 @@ const PluginProvider: FC<Props> = ({ children, className }) => {
     };
   }, []);
 
-  return <Theme className={className}>{children}</Theme>;
+  return (
+    <Theme className={className}>
+      {children}
+      <Cheatsheet />
+    </Theme>
+  );
 };
 
 export default PluginProvider;

@@ -33,7 +33,7 @@ export const handleKeyPress = (key: string) => {
       break;
 
     case Keymap.Cheatsheet:
-      console.log("--> Toggle cheat sheet");
+      appActions.toggleCheatsheet();
       break;
 
     default:
