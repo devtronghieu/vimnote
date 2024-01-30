@@ -6,4 +6,7 @@
   .flex-center {
     @apply flex flex-col justify-center items-center;
   }
+  .glass-effect {
+    @apply bg-opacity-20 backdrop-blur-lg;
+  }
 }
