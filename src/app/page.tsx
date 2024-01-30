@@ -1,7 +1,7 @@
 "use client";
 
 import Key from "@/components/Key";
-import PluginProvider from "@/features/plugins/PluginProvider";
+import PluginProvider from "@/features/plugins";
 
 export default function Home() {
   return (

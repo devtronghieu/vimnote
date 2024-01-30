@@ -8,11 +8,7 @@ export interface AppState {
 }
 
 export const appState = proxy<AppState>({
-  theme: (function (): Theme {
-    const storedTheme = localStorage.getItem("vimnote_theme");
-    const theme: Theme = storedTheme ? JSON.parse(storedTheme) : "dark";
-    return theme;
-  })(),
+  theme: "dark",
   cheatsheet: false,
 });
 
