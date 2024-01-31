@@ -1,4 +1,4 @@
-import { pluginState } from "@/state";
+import { pluginState } from "@/state/vim";
 import { FC, ReactNode, useEffect } from "react";
 import { useSnapshot } from "valtio";
 

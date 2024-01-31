@@ -1,5 +1,5 @@
 import Modal from "@/components/Modal";
-import { PluginModal, pluginState } from "@/state";
+import { PluginModal, pluginState } from "@/state/vim";
 import { useSnapshot } from "valtio";
 
 const Cheatsheet = () => {
