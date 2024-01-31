@@ -4,6 +4,7 @@ import { useEffect, FC, ReactNode, useState, memo } from "react";
 import Theme from "./Theme";
 import Cheatsheet from "./Cheatsheet";
 import FloatingKey from "./FloatingKey";
+import FloatingMode from "./FloatingMode";
 
 interface Props {
   children: ReactNode;
@@ -30,6 +31,7 @@ const PluginProvider: FC<Props> = ({ children, className }) => {
     <MemoizedTheme className={className}>
       {children}
       <MemoizedCheatsheet />
+      <MemoizedFloatingMode />
       <MemoizedFloatingKey keyName={key} />
     </MemoizedTheme>
   );
@@ -37,6 +39,7 @@ const PluginProvider: FC<Props> = ({ children, className }) => {
 
 const MemoizedTheme = memo(Theme);
 const MemoizedCheatsheet = memo(Cheatsheet);
+const MemoizedFloatingMode = memo(FloatingMode);
 const MemoizedFloatingKey = memo(FloatingKey);
 
 export default PluginProvider;
