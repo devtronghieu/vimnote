@@ -1,5 +1,6 @@
+import Key from "@/components/Key";
 import Modal from "@/components/Modal";
-import { PluginModal, pluginState } from "@/state/vim";
+import { Keymap, PluginModal, pluginState } from "@/state/vim";
 import { useSnapshot } from "valtio";
 
 const Cheatsheet = () => {
@@ -15,12 +16,35 @@ const Cheatsheet = () => {
     <Modal
       center
       className={`
-        h-4/5 w-3/5
+        h-4/5 w-3/5 p-8
         glass-effect
         border border-black dark:border-white rounded-lg
       `}
     >
-      Cheatsheet
+      <h2 className="text-xl font-bold text-center mb-6">Cheat sheet</h2>
+
+      <div className="grid grid-cols-2 gap-8">
+        {Object.values(Keymap).map((mode) => {
+          return (
+            <div key={mode.name} className="flex flex-1 flex-col gap-4">
+              <div>
+                <h3 className="text-lg font-semibold">{mode.name}</h3>
+                <p>{mode.desc}</p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {Object.keys(mode.keys).map((key) => {
+                  return (
+                    <div key={key} className="flex items-center gap-2">
+                      <Key name={key} /> {mode.keys[key].desc}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </Modal>
   );
 };
