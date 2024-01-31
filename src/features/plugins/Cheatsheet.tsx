@@ -17,8 +17,7 @@ const Cheatsheet = () => {
       center
       className={`
         h-4/5 w-3/5 p-8
-        glass-effect
-        border border-black dark:border-white rounded-lg
+        glass-effect with-border
       `}
     >
       <h2 className="text-xl font-bold text-center mb-6">Cheat sheet</h2>

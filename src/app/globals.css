@@ -9,4 +9,7 @@
   .glass-effect {
     @apply bg-opacity-20 backdrop-blur-lg;
   }
+  .with-border {
+    @apply border border-black dark:border-white rounded-lg;
+  }
 }
