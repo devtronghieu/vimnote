@@ -1,4 +1,4 @@
-import { handleKeyPress } from "@/state";
+import { Keymap, handleKeyPress } from "@/state";
 import { throttle } from "@/utils";
 import { useEffect, type FC, type ReactNode } from "react";
 import Theme from "./Theme";
@@ -12,7 +12,7 @@ interface Props {
 const PluginProvider: FC<Props> = ({ children, className }) => {
   useEffect(() => {
     const onKeyPress = throttle((e: KeyboardEvent) => {
-      handleKeyPress(e.key);
+      handleKeyPress(e.key as Keymap);
     }, 300);
 
     document.addEventListener("keydown", onKeyPress);

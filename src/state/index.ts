@@ -8,45 +8,37 @@ export enum PluginModal {
 
 export interface AppState {
   theme: Theme;
-  modals: Record<PluginModal, boolean>;
+  modals: PluginModal[];
 }
 
 export const appState = proxy<AppState>({
   theme: "dark",
-  modals: {
-    [PluginModal.Cheatsheet]: false,
-  },
+  modals: [],
 });
-
-export const appActions = {
-  toggleTheme: () => {
-    appState.theme = appState.theme === "dark" ? "light" : "dark";
-    localStorage.setItem("vimnote_theme", JSON.stringify(appState.theme));
-  },
-  toggleCheatsheet: () => {
-    appState.modals[PluginModal.Cheatsheet] =
-      !appState.modals[PluginModal.Cheatsheet];
-  },
-};
 
 export enum Keymap {
   ToggleTheme = "t",
   Cheatsheet = "?",
-  Unknown = "unknown",
+  PopModal = "q",
 }
 
-export const handleKeyPress = (key: string) => {
-  switch (key) {
-    case Keymap.ToggleTheme:
-      appActions.toggleTheme();
-      break;
+export const appActions: Record<Keymap, () => void> = {
+  [Keymap.PopModal]: () => {
+    appState.modals.pop();
+  },
+  [Keymap.ToggleTheme]: () => {
+    appState.theme = appState.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("vimnote_theme", JSON.stringify(appState.theme));
+  },
+  [Keymap.Cheatsheet]: () => {
+    if (!appState.modals.includes(PluginModal.Cheatsheet)) {
+      appState.modals.push(PluginModal.Cheatsheet);
+    }
+  },
+};
 
-    case Keymap.Cheatsheet:
-      appActions.toggleCheatsheet();
-      break;
-
-    default:
-      console.log("--> Unmapped key:", key);
-      break;
+export const handleKeyPress = (key: Keymap) => {
+  if (Object.values(Keymap).includes(key)) {
+    appActions[key]();
   }
 };

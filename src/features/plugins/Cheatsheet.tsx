@@ -3,7 +3,7 @@ import { PluginModal, appState } from "@/state";
 import { useSnapshot } from "valtio";
 
 const Cheatsheet = () => {
-  const isShown = useSnapshot(appState).modals[PluginModal.Cheatsheet];
+  const isShown = useSnapshot(appState).modals.includes(PluginModal.Cheatsheet);
 
   if (!isShown) {
     return null;
