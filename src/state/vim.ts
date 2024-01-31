@@ -21,7 +21,6 @@ export const pluginState = proxy<AppState>({
     if (storedTheme) {
       return JSON.parse(storedTheme);
     }
-    return "dark";
 
     if (
       window.matchMedia &&
@@ -39,7 +38,7 @@ export const handleKeyPress = (key: string) => {
   Keymap[pluginState.mode].keys[key]?.action();
 };
 
-export type Action = "Navigation" | "Theme" | "Unknown";
+export type Action = "Navigation" | "Theme" | "Editing" | "Unknown";
 
 export interface KeymapDetail {
   type: Action;
@@ -58,6 +57,34 @@ export const Keymap: Record<Mode, ModeDetail> = {
     name: "Normal",
     desc: "Normal mode description",
     keys: {
+      i: {
+        type: "Editing",
+        desc: "Insert before the cursor",
+        action: () => {
+          pluginState.mode = "Insert";
+        },
+      },
+      a: {
+        type: "Editing",
+        desc: "Insert after the cursor",
+        action: () => {
+          pluginState.mode = "Insert";
+        },
+      },
+      o: {
+        type: "Editing",
+        desc: "Open a new line below",
+        action: () => {
+          pluginState.mode = "Insert";
+        },
+      },
+      O: {
+        type: "Editing",
+        desc: "Open a new line above",
+        action: () => {
+          pluginState.mode = "Insert";
+        },
+      },
       t: {
         type: "Theme",
         desc: "Toggle theme (Light | Dark)",
@@ -69,6 +96,16 @@ export const Keymap: Record<Mode, ModeDetail> = {
           );
         },
       },
+      q: {
+        type: "Navigation",
+        desc: "Close top-most modal",
+        action: () => pluginState.modals.pop(),
+      },
+      v: {
+        type: "Navigation",
+        desc: "Switch to View mode",
+        action: () => (pluginState.mode = "View"),
+      },
       "?": {
         type: "Unknown",
         desc: "Open Cheat sheet",
@@ -78,22 +115,26 @@ export const Keymap: Record<Mode, ModeDetail> = {
           }
         },
       },
-      q: {
-        type: "Unknown",
-        desc: "Close top-most modal",
-        action: () => pluginState.modals.pop(),
-      },
-      v: {
-        type: "Navigation",
-        desc: "Switch to View mode",
-        action: () => (pluginState.mode = "View"),
-      },
     },
   },
   View: {
     name: "View",
     desc: "View mode description",
     keys: {
+      q: {
+        type: "Navigation",
+        desc: "Close top-most modal",
+        action: () => pluginState.modals.pop(),
+      },
+      "?": {
+        type: "Unknown",
+        desc: "Open Cheat sheet",
+        action: () => {
+          if (!pluginState.modals.includes(PluginModal.Cheatsheet)) {
+            pluginState.modals.push(PluginModal.Cheatsheet);
+          }
+        },
+      },
       Escape: {
         type: "Navigation",
         desc: "Switch to Normal mode",
