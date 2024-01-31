@@ -11,8 +11,14 @@ export interface AppState {
   modals: PluginModal[];
 }
 
-export const appState = proxy<AppState>({
-  theme: "dark",
+export const pluginState = proxy<AppState>({
+  theme: (() => {
+    const storedTheme = localStorage.getItem("vimnote_theme");
+    if (storedTheme) {
+      return JSON.parse(storedTheme);
+    }
+    return "dark";
+  })(),
   modals: [],
 });
 
@@ -22,23 +28,23 @@ export enum Keymap {
   PopModal = "q",
 }
 
-export const appActions: Record<Keymap, () => void> = {
+export const pluginActions: Record<Keymap, () => void> = {
   [Keymap.PopModal]: () => {
-    appState.modals.pop();
+    pluginState.modals.pop();
   },
   [Keymap.ToggleTheme]: () => {
-    appState.theme = appState.theme === "dark" ? "light" : "dark";
-    localStorage.setItem("vimnote_theme", JSON.stringify(appState.theme));
+    pluginState.theme = pluginState.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("vimnote_theme", JSON.stringify(pluginState.theme));
   },
   [Keymap.Cheatsheet]: () => {
-    if (!appState.modals.includes(PluginModal.Cheatsheet)) {
-      appState.modals.push(PluginModal.Cheatsheet);
+    if (!pluginState.modals.includes(PluginModal.Cheatsheet)) {
+      pluginState.modals.push(PluginModal.Cheatsheet);
     }
   },
 };
 
 export const handleKeyPress = (key: Keymap) => {
   if (Object.values(Keymap).includes(key)) {
-    appActions[key]();
+    pluginActions[key]();
   }
 };

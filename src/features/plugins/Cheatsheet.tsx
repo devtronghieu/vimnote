@@ -1,9 +1,11 @@
 import Modal from "@/components/Modal";
-import { PluginModal, appState } from "@/state";
+import { PluginModal, pluginState } from "@/state";
 import { useSnapshot } from "valtio";
 
 const Cheatsheet = () => {
-  const isShown = useSnapshot(appState).modals.includes(PluginModal.Cheatsheet);
+  const isShown = useSnapshot(pluginState).modals.includes(
+    PluginModal.Cheatsheet,
+  );
 
   if (!isShown) {
     return null;

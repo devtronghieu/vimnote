@@ -1,4 +1,4 @@
-import { appState } from "@/state";
+import { pluginState } from "@/state";
 import { FC, ReactNode, useEffect } from "react";
 import { useSnapshot } from "valtio";
 
@@ -8,14 +8,7 @@ interface Props {
 }
 
 const Theme: FC<Props> = ({ children, className }) => {
-  const themeSnap = useSnapshot(appState).theme;
-
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("vimnote_theme");
-    if (storedTheme) {
-      appState.theme = JSON.parse(storedTheme);
-    }
-  }, []);
+  const themeSnap = useSnapshot(pluginState).theme;
 
   useEffect(() => {
     document.body.classList.remove("light", "dark");

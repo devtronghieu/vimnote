@@ -8,7 +8,7 @@ export default function Home() {
     <PluginProvider className="h-screen flex-center gap-2">
       <h1 className="text-lg font-semibold">Hello, Vimnote</h1>
       <p>
-        Press <Key name="?" /> to toggle Cheat sheet
+        Press <Key name="?" /> to open Cheat sheet
       </p>
     </PluginProvider>
   );
