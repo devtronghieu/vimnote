@@ -1,10 +1,6 @@
 import { proxy } from "valtio";
 
-export enum Mode {
-  Normal,
-  Insert,
-  View,
-}
+export type Mode = "Normal" | "View" | "Insert";
 
 export type Theme = "light" | "dark";
 
@@ -19,7 +15,7 @@ export interface AppState {
 }
 
 export const pluginState = proxy<AppState>({
-  mode: Mode.Normal,
+  mode: "Normal",
   theme: (() => {
     const storedTheme = localStorage.getItem("vimnote_theme");
     if (storedTheme) {
@@ -49,7 +45,7 @@ export interface ModeDetail {
 }
 
 export const Keymap: Record<Mode, ModeDetail> = {
-  [Mode.Normal]: {
+  Normal: {
     name: "Normal",
     desc: "Normal mode description",
     keys: {
@@ -76,20 +72,35 @@ export const Keymap: Record<Mode, ModeDetail> = {
       q: {
         type: "Unknown",
         desc: "Close top-most modal",
-        action: () => {
-          pluginState.modals.pop();
-        },
+        action: () => pluginState.modals.pop(),
+      },
+      v: {
+        type: "Navigation",
+        desc: "Switch to View mode",
+        action: () => (pluginState.mode = "View"),
       },
     },
   },
-  [Mode.View]: {
+  View: {
     name: "View",
     desc: "View mode description",
-    keys: {},
+    keys: {
+      Escape: {
+        type: "Navigation",
+        desc: "Switch to Normal mode",
+        action: () => (pluginState.mode = "Normal"),
+      },
+    },
   },
-  [Mode.Insert]: {
+  Insert: {
     name: "Insert",
     desc: "Insert mode description",
-    keys: {},
+    keys: {
+      Escape: {
+        type: "Navigation",
+        desc: "Switch to Normal mode",
+        action: () => (pluginState.mode = "Normal"),
+      },
+    },
   },
 };
