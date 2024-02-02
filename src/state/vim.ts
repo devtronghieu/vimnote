@@ -16,21 +16,7 @@ export interface VimState {
 
 export const vimState = proxy<VimState>({
   mode: "Normal",
-  theme: (() => {
-    const storedTheme = localStorage.getItem("vimnote_theme");
-    if (storedTheme) {
-      return JSON.parse(storedTheme);
-    }
-
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      return "dark";
-    }
-
-    return "light";
-  })(),
+  theme: "light",
   modals: [],
 });
 

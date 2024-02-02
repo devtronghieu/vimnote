@@ -1,4 +1,4 @@
-import { handleKeyPress } from "@/state/vim";
+import { handleKeyPress, vimState } from "@/state/vim";
 import { throttle } from "@/utils";
 import { useEffect, FC, ReactNode, useState, memo } from "react";
 import Theme from "./Theme";
@@ -15,6 +15,16 @@ const PluginProvider: FC<Props> = ({ children, className }) => {
   const [key, setKey] = useState<string>();
 
   useEffect(() => {
+    const storedTheme = localStorage.getItem("vimnote_theme");
+    if (storedTheme) {
+      vimState.theme = JSON.parse(storedTheme);
+    } else if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      vimState.theme = "dark";
+    }
+
     const onKeyPress = throttle((e: KeyboardEvent) => {
       handleKeyPress(e.key);
       setKey(e.key !== " " ? e.key : "Space");
