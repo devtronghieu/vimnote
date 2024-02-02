@@ -1,4 +1,4 @@
-import { pluginState } from "@/state/vim";
+import { vimState } from "@/state/vim";
 import { FC, ReactNode, useEffect } from "react";
 import { useSnapshot } from "valtio";
 
@@ -8,7 +8,7 @@ interface Props {
 }
 
 const Theme: FC<Props> = ({ children, className }) => {
-  const themeSnap = useSnapshot(pluginState).theme;
+  const themeSnap = useSnapshot(vimState).theme;
 
   useEffect(() => {
     document.body.classList.remove("light", "dark");

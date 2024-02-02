@@ -8,13 +8,13 @@ export enum PluginModal {
   Cheatsheet,
 }
 
-export interface AppState {
+export interface VimState {
   mode: Mode;
   theme: Theme;
   modals: PluginModal[];
 }
 
-export const pluginState = proxy<AppState>({
+export const vimState = proxy<VimState>({
   mode: "Normal",
   theme: (() => {
     const storedTheme = localStorage.getItem("vimnote_theme");
@@ -35,7 +35,7 @@ export const pluginState = proxy<AppState>({
 });
 
 export const handleKeyPress = (key: string) => {
-  Keymap[pluginState.mode].keys[key]?.action();
+  Keymap[vimState.mode].keys[key]?.action();
 };
 
 export type Action = "Navigation" | "Theme" | "Editing" | "Unknown";
@@ -61,57 +61,54 @@ export const Keymap: Record<Mode, ModeDetail> = {
         type: "Editing",
         desc: "Insert before the cursor",
         action: () => {
-          pluginState.mode = "Insert";
+          vimState.mode = "Insert";
         },
       },
       a: {
         type: "Editing",
         desc: "Insert after the cursor",
         action: () => {
-          pluginState.mode = "Insert";
+          vimState.mode = "Insert";
         },
       },
       o: {
         type: "Editing",
         desc: "Open a new line below",
         action: () => {
-          pluginState.mode = "Insert";
+          vimState.mode = "Insert";
         },
       },
       O: {
         type: "Editing",
         desc: "Open a new line above",
         action: () => {
-          pluginState.mode = "Insert";
+          vimState.mode = "Insert";
         },
       },
       t: {
         type: "Theme",
         desc: "Toggle theme (Light | Dark)",
         action: () => {
-          pluginState.theme = pluginState.theme === "dark" ? "light" : "dark";
-          localStorage.setItem(
-            "vimnote_theme",
-            JSON.stringify(pluginState.theme),
-          );
+          vimState.theme = vimState.theme === "dark" ? "light" : "dark";
+          localStorage.setItem("vimnote_theme", JSON.stringify(vimState.theme));
         },
       },
       q: {
         type: "Navigation",
         desc: "Close top-most modal",
-        action: () => pluginState.modals.pop(),
+        action: () => vimState.modals.pop(),
       },
       v: {
         type: "Navigation",
         desc: "Switch to View mode",
-        action: () => (pluginState.mode = "View"),
+        action: () => (vimState.mode = "View"),
       },
       "?": {
         type: "Unknown",
         desc: "Open Cheat sheet",
         action: () => {
-          if (!pluginState.modals.includes(PluginModal.Cheatsheet)) {
-            pluginState.modals.push(PluginModal.Cheatsheet);
+          if (!vimState.modals.includes(PluginModal.Cheatsheet)) {
+            vimState.modals.push(PluginModal.Cheatsheet);
           }
         },
       },
@@ -124,21 +121,21 @@ export const Keymap: Record<Mode, ModeDetail> = {
       q: {
         type: "Navigation",
         desc: "Close top-most modal",
-        action: () => pluginState.modals.pop(),
+        action: () => vimState.modals.pop(),
       },
       "?": {
         type: "Unknown",
         desc: "Open Cheat sheet",
         action: () => {
-          if (!pluginState.modals.includes(PluginModal.Cheatsheet)) {
-            pluginState.modals.push(PluginModal.Cheatsheet);
+          if (!vimState.modals.includes(PluginModal.Cheatsheet)) {
+            vimState.modals.push(PluginModal.Cheatsheet);
           }
         },
       },
       Escape: {
         type: "Navigation",
         desc: "Switch to Normal mode",
-        action: () => (pluginState.mode = "Normal"),
+        action: () => (vimState.mode = "Normal"),
       },
     },
   },
@@ -149,7 +146,7 @@ export const Keymap: Record<Mode, ModeDetail> = {
       Escape: {
         type: "Navigation",
         desc: "Switch to Normal mode",
-        action: () => (pluginState.mode = "Normal"),
+        action: () => (vimState.mode = "Normal"),
       },
     },
   },

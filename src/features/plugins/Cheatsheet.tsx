@@ -1,12 +1,10 @@
 import Key from "@/components/Key";
 import Modal from "@/components/Modal";
-import { Keymap, PluginModal, pluginState } from "@/state/vim";
+import { Keymap, PluginModal, vimState } from "@/state/vim";
 import { useSnapshot } from "valtio";
 
 const Cheatsheet = () => {
-  const isShown = useSnapshot(pluginState).modals.includes(
-    PluginModal.Cheatsheet,
-  );
+  const isShown = useSnapshot(vimState).modals.includes(PluginModal.Cheatsheet);
 
   if (!isShown) return null;
 
