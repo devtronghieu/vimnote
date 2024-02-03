@@ -1,4 +1,4 @@
-export const defaultCols = 20;
+import { LineMap } from "@/state/vim";
 
 export const getCharSize = (font: string) => {
   const hiddenDiv = document.createElement("div");
@@ -19,26 +19,29 @@ export const getCharSize = (font: string) => {
   };
 };
 
-export const renderLineNumbers = (
-  lineNumbersEle: HTMLDivElement,
-  textAreaEle: HTMLTextAreaElement,
-) => {
-  const lines = textAreaEle.value.split("\n");
-
-  const lineNumbers: number[] = [];
-  for (let i = 0; i < lines.length; i++) {
-    lineNumbers.push(i + 1);
-    const emptyLines = Math.floor(lines[i].length / textAreaEle.cols);
-    Array.from({ length: emptyLines }).forEach(() => lineNumbers.push(0));
-  }
-
-  lineNumbersEle.innerHTML = lineNumbers
-    .map((num) => (num !== 0 ? `<p>${num}</p>` : "<p>&nbsp;</p>"))
-    .join("");
+export const getTotalCols = (textAreaEle: HTMLTextAreaElement) => {
+  const computedStyle = window.getComputedStyle(textAreaEle);
+  const contentWidth =
+    textAreaEle.clientWidth -
+    parseInt(computedStyle.paddingLeft) -
+    parseInt(computedStyle.paddingRight);
+  return (
+    Math.floor(contentWidth / getCharSize(computedStyle.font).charWidth) + 1
+  );
 };
 
-export const getCols = (textAreaEle: HTMLTextAreaElement) => {
-  const charWidth = getCharSize(textAreaEle.style.font).charWidth;
-  const textWidth = textAreaEle.clientWidth;
-  return Math.floor(textWidth / charWidth);
+export const renderLineNumbers = (
+  textAreaEle: HTMLTextAreaElement,
+): LineMap => {
+  const lineMap: LineMap = new Map();
+
+  const lines = textAreaEle.value.split("\n");
+
+  for (let i = 0; i < lines.length; i++) {
+    let emptyLines = Math.floor(lines[i].length / textAreaEle.cols);
+    if (lines[i].length % textAreaEle.cols === 0) emptyLines--;
+    lineMap.set(i, emptyLines > 0 ? 1 + emptyLines : 1);
+  }
+
+  return lineMap;
 };

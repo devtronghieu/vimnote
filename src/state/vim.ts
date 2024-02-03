@@ -8,15 +8,39 @@ export enum PluginModal {
   Cheatsheet,
 }
 
+export type LineNumber = number;
+export type LineExpand = number;
+export type LineMap = Map<LineNumber, LineExpand>;
+
 export interface VimState {
   mode: Mode;
   theme: Theme;
+  editor: {
+    content: string;
+    totalCols: number;
+    charSize: {
+      charWidth: number;
+      charHeight: number;
+    };
+    caretPosition: {
+      start: number;
+      end: number;
+    };
+    lineMap: LineMap;
+  };
   modals: PluginModal[];
 }
 
 export const vimState = proxy<VimState>({
   mode: "Normal",
   theme: "light",
+  editor: {
+    content: "",
+    totalCols: 20,
+    charSize: { charWidth: 0, charHeight: 0 },
+    caretPosition: { start: 0, end: 0 },
+    lineMap: new Map<LineNumber, LineExpand>(),
+  },
   modals: [],
 });
 
@@ -43,6 +67,48 @@ export const Keymap: Record<Mode, ModeDetail> = {
     name: "Normal",
     desc: "Normal mode description",
     keys: {
+      h: {
+        type: "Navigation",
+        desc: "Move cursor left",
+        action: () => {
+          const newStart = vimState.editor.caretPosition.start - 1;
+          if (newStart >= 0) {
+            vimState.editor.caretPosition.start = newStart;
+          }
+        },
+      },
+      j: {
+        type: "Navigation",
+        desc: "Move cursor down",
+        action: () => {
+          const newStart =
+            vimState.editor.caretPosition.start + vimState.editor.totalCols;
+          if (newStart < vimState.editor.content.length) {
+            vimState.editor.caretPosition.start = newStart;
+          }
+        },
+      },
+      k: {
+        type: "Navigation",
+        desc: "Move cursor up",
+        action: () => {
+          const newStart =
+            vimState.editor.caretPosition.start - vimState.editor.totalCols;
+          if (newStart >= 0) {
+            vimState.editor.caretPosition.start = newStart;
+          }
+        },
+      },
+      l: {
+        type: "Navigation",
+        desc: "Move cursor right",
+        action: () => {
+          const newStart = vimState.editor.caretPosition.start + 1;
+          if (newStart < vimState.editor.content.length) {
+            vimState.editor.caretPosition.start = newStart;
+          }
+        },
+      },
       i: {
         type: "Editing",
         desc: "Insert before the cursor",
