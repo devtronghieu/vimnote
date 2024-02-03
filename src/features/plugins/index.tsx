@@ -1,5 +1,4 @@
 import { handleKeyPress, vimState } from "@/state/vim";
-import { throttle } from "@/utils";
 import { useEffect, FC, ReactNode, useState, memo } from "react";
 import Theme from "./Theme";
 import Cheatsheet from "./Cheatsheet";
