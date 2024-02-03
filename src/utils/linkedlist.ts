@@ -1,88 +1,82 @@
 export class ListNode<T> {
-  data: T;
-  next: ListNode<T> | null;
+  public value: T;
+  public next: ListNode<T> | null = null;
+  public prev: ListNode<T> | null = null;
 
-  constructor(data: T) {
-    this.data = data;
-    this.next = null;
+  constructor(value: T) {
+    this.value = value;
   }
 }
 
 export class LinkedList<T> {
-  head: ListNode<T> | null;
-  tail: ListNode<T> | null;
+  head: ListNode<T> | null = null;
+  tail: ListNode<T> | null = null;
 
-  constructor() {
-    this.head = null;
-    this.tail = null;
-  }
-
-  append(data: T): void {
-    const newNode = new ListNode(data);
+  append(value: T): void {
+    const newNode = new ListNode(value);
 
     if (!this.head) {
       this.head = newNode;
       this.tail = newNode;
     } else {
+      newNode.prev = this.tail;
       this.tail!.next = newNode;
       this.tail = newNode;
     }
   }
 
-  prepend(data: T): void {
-    const newNode = new ListNode(data);
+  prepend(value: T): void {
+    const newNode = new ListNode(value);
 
     if (!this.head) {
       this.head = newNode;
       this.tail = newNode;
     } else {
       newNode.next = this.head;
+      this.head!.prev = newNode;
       this.head = newNode;
     }
   }
 
   delete(value: T): void {
-    if (!this.head) {
-      return;
-    }
-
-    if (this.head.data === value) {
-      this.head = this.head.next;
-      if (!this.head) {
-        this.tail = null;
-      }
-      return;
-    }
-
     let current = this.head;
-    while (current.next && current.next.data !== value) {
+
+    while (current) {
+      if (current.value === value) {
+        if (current.prev) {
+          current.prev.next = current.next;
+        } else {
+          this.head = current.next;
+        }
+
+        if (current.next) {
+          current.next.prev = current.prev;
+        } else {
+          this.tail = current.prev;
+        }
+
+        return;
+      }
+
+      current = current.next;
+    }
+  }
+
+  search(value: T): ListNode<T> | null {
+    let current = this.head;
+
+    while (current) {
+      if (current.value === value) {
+        return current;
+      }
+
       current = current.next;
     }
 
-    if (current.next) {
-      current.next = current.next.next;
-      if (!current.next) {
-        this.tail = current;
-      }
-    }
+    return null;
   }
 
   contains(value: T): boolean {
-    let current = this.head;
-    while (current) {
-      if (current.data === value) {
-        return true;
-      }
-      current = current.next;
-    }
-    return false;
-  }
-
-  print(): void {
-    let current = this.head;
-    while (current) {
-      console.log(current.data);
-      current = current.next;
-    }
+    return !!this.search(value);
   }
 }

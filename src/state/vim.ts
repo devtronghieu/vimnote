@@ -1,4 +1,5 @@
 import { proxy } from "valtio";
+import { VimEditor } from "./internal";
 
 export type Mode = "Normal" | "View" | "Insert";
 
@@ -8,24 +9,26 @@ export enum PluginModal {
   Cheatsheet,
 }
 
-export type LineNumber = number;
-export type LineExpand = number;
-export type LineMap = Map<LineNumber, LineExpand>;
-
 export interface VimState {
   mode: Mode;
   theme: Theme;
   modals: PluginModal[];
+  editor: VimEditor;
 }
 
 export const vimState = proxy<VimState>({
   mode: "Normal",
   theme: "light",
   modals: [],
+  editor: new VimEditor(),
 });
 
 export const handleKeyPress = (key: string) => {
-  Keymap[vimState.mode].keys[key]?.action();
+  if (vimState.mode === "Insert" && key !== "Escape") {
+    vimState.editor.type(key);
+  } else {
+    Keymap[vimState.mode].keys[key]?.action();
+  }
 };
 
 export type Action = "Navigation" | "Theme" | "Editing" | "Unknown";
