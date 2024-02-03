@@ -25,10 +25,10 @@ const PluginProvider: FC<Props> = ({ children, className }) => {
       vimState.theme = "dark";
     }
 
-    const onKeyPress = throttle((e: KeyboardEvent) => {
+    const onKeyPress = (e: KeyboardEvent) => {
       handleKeyPress(e.key);
       setKey(e.key !== " " ? e.key : "Space");
-    }, 200);
+    };
 
     document.addEventListener("keydown", onKeyPress);
 
