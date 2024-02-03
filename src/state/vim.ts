@@ -198,7 +198,10 @@ export const Keymap: Record<Mode, ModeDetail> = {
       Escape: {
         type: "Navigation",
         desc: "Switch to Normal mode",
-        action: () => (vimState.mode = "Normal"),
+        action: () => {
+          vimState.mode = "Normal";
+          Keymap.Normal.keys["h"].action();
+        },
       },
     },
   },

@@ -51,7 +51,6 @@ const VimEditor: FC<Props> = ({ className }) => {
   const startRow = Math.floor(caretPosition.start / totalCols);
   const startCol = caretPosition.start % totalCols;
   console.log("-->", startRow, startCol);
-  console.log("--> content", content);
 
   const lines: string[] = [];
   for (let i = 0; i < lineMap.size; i++) {
@@ -95,9 +94,9 @@ const VimEditor: FC<Props> = ({ className }) => {
           `}
           cols={totalCols}
           value={content}
-          onChange={handleChange}
+          onInput={handleChange}
           onScroll={syncScroll}
-          disabled={mode !== "Insert"}
+          readOnly={mode !== "Insert"}
         />
       </div>
     </div>
