@@ -1,6 +1,23 @@
 import { LinkedList, ListNode } from "@/utils/linkedlist";
 import { isFunctionKey } from "@/utils/validate";
 
+export enum Mode {
+  Normal,
+  Insert,
+  View,
+}
+
+export interface KeymapDetail {
+  desc: string;
+  action: () => any;
+}
+
+export interface Plugin {
+  name: string;
+  desc: string;
+  keymaps: Map<Mode, Map<string, KeymapDetail>>;
+}
+
 interface CursorPosition {
   row: ListNode<string>;
   col: number;

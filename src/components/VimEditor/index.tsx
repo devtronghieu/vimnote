@@ -1,4 +1,4 @@
-import { vimState } from "@/state/vim";
+import { vimState } from "@/engines/vim";
 import { FC } from "react";
 import { useSnapshot } from "valtio";
 
