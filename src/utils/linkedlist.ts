@@ -79,4 +79,19 @@ export class LinkedList<T> {
   contains(value: T): boolean {
     return !!this.search(value);
   }
+
+  mapToArray<U>(transform: (value: T, index: number) => U): Array<U> {
+    const result = new Array<U>();
+    let current = this.head;
+    let index = 0;
+
+    while (current) {
+      const transformedValue = transform(current.value, index);
+      result.push(transformedValue);
+      current = current.next;
+      index++;
+    }
+
+    return result;
+  }
 }

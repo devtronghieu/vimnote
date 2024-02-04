@@ -10,7 +10,7 @@ export default function Home() {
       <p>
         Press <Key name="?" /> to open Cheat sheet
       </p>
-      <VimEditor className="w-96" />
+      <VimEditor />
     </div>
   );
 }

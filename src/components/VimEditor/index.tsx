@@ -1,25 +1,58 @@
 import { vimState } from "@/engines/vim";
-import { FC } from "react";
+import { Container, Stage, Text } from "@pixi/react";
+import { FC, useEffect } from "react";
 import { useSnapshot } from "valtio";
+import Char from "./Char";
+import { getHexColorNumber } from "@/utils/colors";
 
-interface Props {
-  className?: string;
-}
+interface Props {}
 
-const VimEditor: FC<Props> = ({ className }) => {
-  const vimSnap = useSnapshot(vimState);
-  console.log(
-    "-->",
-    vimSnap.editor.cursor.col,
-    vimSnap.editor.cursor.row.value,
-  );
+const VimEditor: FC<Props> = ({}) => {
+  const snap = useSnapshot(vimState);
+  const charWidth = 10;
+  const charHeight = 18;
+  const width = 400;
+  const height = 200;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      vimState.editor.type(e.key);
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
-    <div
-      className={`text-black with-border overflow-hidden flex h-[200px] ${className}`}
+    <Stage
+      width={width}
+      height={height}
+      options={{
+        backgroundColor: getHexColorNumber("#ffffff"),
+      }}
+      className="with-border p-4"
     >
-      I&apos;m gonna rework this one
-    </div>
+      {snap.editor.content.mapToArray((line, row) => {
+        return (
+          <Container key={row} y={row * charHeight}>
+            {line.split("").map((char, col) => (
+              <Char
+                key={col}
+                text={char}
+                x={col * charWidth}
+                width={charWidth}
+                height={charHeight}
+              />
+            ))}
+          </Container>
+        );
+      })}
+
+      <Container y={height - charHeight}>
+        <Text text={snap.editor.mode} height={charHeight} />
+      </Container>
+    </Stage>
   );
 };
 
