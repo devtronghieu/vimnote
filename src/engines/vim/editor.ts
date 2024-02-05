@@ -9,12 +9,14 @@ interface CursorPosition {
 
 export class VimEditor {
   content: string[];
+  clipboard: string;
   cursor: CursorPosition;
   mode: Mode;
 
   constructor() {
     this.content = [];
     this.content.push("");
+    this.clipboard = "";
     this.cursor = {
       row: 0,
       col: 0,
@@ -50,6 +52,21 @@ export class VimEditor {
       case "a": {
         this.mode = "Insert";
         this.goRight();
+        break;
+      }
+      case "o": {
+        this.mode = "Insert";
+        this.cursor.row++;
+        this.cursor.col = 0;
+        this.content.splice(this.cursor.row, 0, "");
+        break;
+      }
+      case "O": {
+        this.mode = "Insert";
+        const line = this.getCurrentLine();
+        this.setCurrentLine("");
+        this.cursor.col = 0;
+        this.content.splice(this.cursor.row + 1, 0, line);
         break;
       }
       case "v":
