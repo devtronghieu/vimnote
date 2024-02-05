@@ -4,6 +4,7 @@ import { FC, useEffect } from "react";
 import { useSnapshot } from "valtio";
 import Char from "./Char";
 import { getHexColorNumber } from "@/utils/colors";
+import Caret from "./Caret";
 
 interface Props {}
 
@@ -48,6 +49,13 @@ const VimEditor: FC<Props> = ({}) => {
           </Container>
         );
       })}
+
+      <Caret
+        x={snap.editor.cursor.col * charWidth}
+        y={0}
+        width={1}
+        height={charHeight}
+      />
 
       <Container y={height - charHeight}>
         <Text text={snap.editor.mode} height={charHeight} />

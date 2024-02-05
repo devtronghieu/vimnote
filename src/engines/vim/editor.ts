@@ -1,6 +1,7 @@
 import { LinkedList, ListNode } from "@/utils/linkedlist";
 import { isFunctionKey } from "@/utils/validate";
 import { Mode } from "./internal";
+import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
 
 interface CursorPosition {
   row: ListNode<string>;
@@ -57,8 +58,34 @@ export class VimEditor {
           this.cursor.row.next = new ListNode("");
           this.cursor.row.next.next = temp;
           this.cursor.row = this.cursor.row.next;
+          this.cursor.col = 0;
           break;
         }
+        case "Backspace": {
+          this.cursor.col--;
+          this.cursor.row.value = removeCharAtIndex(
+            this.cursor.row.value,
+            this.cursor.col,
+          );
+          break;
+        }
+        case "Delete": {
+          this.cursor.row.value = removeCharAtIndex(
+            this.cursor.row.value,
+            this.cursor.col,
+          );
+          break;
+        }
+        case "ArrowLeft":
+          if (this.cursor.col > 0) {
+            this.cursor.col--;
+          }
+          break;
+        case "ArrowRight":
+          if (this.cursor.col < this.cursor.row.value.length) {
+            this.cursor.col++;
+          }
+          break;
         default:
           break;
       }
@@ -66,7 +93,11 @@ export class VimEditor {
         this.mode = "Normal";
       }
     } else {
-      this.cursor.row.value += key;
+      this.cursor.row.value = addStringAtIndex({
+        baseString: this.cursor.row.value,
+        stringToAdd: key,
+        index: this.cursor.col,
+      });
       this.cursor.col++;
     }
   }
