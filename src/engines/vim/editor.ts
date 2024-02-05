@@ -1,23 +1,22 @@
-import { LinkedList, ListNode } from "@/utils/linkedlist";
 import { isFunctionKey } from "@/utils/validate";
 import { Mode } from "./internal";
 import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
 
 interface CursorPosition {
-  row: ListNode<string>;
+  row: number;
   col: number;
 }
 
 export class VimEditor {
-  content: LinkedList<string>;
+  content: string[];
   cursor: CursorPosition;
   mode: Mode;
 
   constructor() {
-    this.content = new LinkedList<string>();
-    this.content.append("");
+    this.content = [];
+    this.content.push("");
     this.cursor = {
-      row: this.content.head!,
+      row: 0,
       col: 0,
     };
     this.mode = "Normal";
@@ -34,13 +33,39 @@ export class VimEditor {
     }
   }
 
+  getCurrentLine() {
+    return this.content[this.cursor.row];
+  }
+
+  setCurrentLine(value: string) {
+    this.content[this.cursor.row] = value;
+  }
+
   private handleNormalModeKey(key: string) {
     switch (key) {
-      case "a":
+      case "i": {
         this.mode = "Insert";
         break;
+      }
+      case "a": {
+        this.mode = "Insert";
+        this.goRight();
+        break;
+      }
       case "v":
         this.mode = "View";
+        break;
+      case "h":
+        this.goLeft();
+        break;
+      case "l":
+        this.goRight();
+        break;
+      case "k":
+        this.goUp();
+        break;
+      case "j":
+        this.goDown();
         break;
       default:
         break;
@@ -50,54 +75,57 @@ export class VimEditor {
   private handleInsertModeKey(key: string) {
     if (isFunctionKey(key)) {
       switch (key) {
-        case "Escape":
+        case "Escape": {
           this.mode = "Normal";
+          this.goLeft();
           break;
+        }
         case "Enter": {
-          const temp = this.cursor.row.next;
-          this.cursor.row.next = new ListNode("");
-          this.cursor.row.next.next = temp;
-          this.cursor.row = this.cursor.row.next;
+          const breakContent = this.getCurrentLine().slice(this.cursor.col);
+          this.setCurrentLine(this.getCurrentLine().slice(0, this.cursor.col));
+          this.cursor.row++;
           this.cursor.col = 0;
+          this.content.splice(this.cursor.row, 0, breakContent);
           break;
         }
         case "Backspace": {
-          this.cursor.col--;
-          this.cursor.row.value = removeCharAtIndex(
-            this.cursor.row.value,
-            this.cursor.col,
-          );
+          if (this.cursor.col > 0) {
+            this.cursor.col--;
+            this.setCurrentLine(
+              removeCharAtIndex(this.getCurrentLine(), this.cursor.col),
+            );
+          }
           break;
         }
         case "Delete": {
-          this.cursor.row.value = removeCharAtIndex(
-            this.cursor.row.value,
-            this.cursor.col,
+          this.setCurrentLine(
+            removeCharAtIndex(this.getCurrentLine(), this.cursor.col),
           );
           break;
         }
         case "ArrowLeft":
-          if (this.cursor.col > 0) {
-            this.cursor.col--;
-          }
+          this.goLeft();
           break;
         case "ArrowRight":
-          if (this.cursor.col < this.cursor.row.value.length) {
-            this.cursor.col++;
-          }
+          this.goRight();
+          break;
+        case "ArrowUp":
+          this.goUp();
+          break;
+        case "ArrowDown":
+          this.goDown();
           break;
         default:
           break;
       }
-      if (key === "Escape") {
-        this.mode = "Normal";
-      }
     } else {
-      this.cursor.row.value = addStringAtIndex({
-        baseString: this.cursor.row.value,
-        stringToAdd: key,
-        index: this.cursor.col,
-      });
+      this.setCurrentLine(
+        addStringAtIndex({
+          baseString: this.getCurrentLine(),
+          stringToAdd: key,
+          index: this.cursor.col,
+        }),
+      );
       this.cursor.col++;
     }
   }
@@ -105,6 +133,50 @@ export class VimEditor {
   private handleViewModeKey(key: string) {
     if (key === "Escape") {
       this.mode = "Normal";
+    }
+  }
+
+  /* Navigation */
+  private goLeft() {
+    if (this.cursor.col > 0) {
+      this.cursor.col--;
+    }
+  }
+
+  private goRight() {
+    let maxReach = this.getCurrentLine().length;
+
+    if (this.mode !== "Insert") {
+      maxReach--;
+    }
+
+    if (this.cursor.col < maxReach) {
+      this.cursor.col++;
+    }
+  }
+
+  private goUp() {
+    if (this.cursor.row > 0) {
+      this.cursor.row--;
+      this.switchLine();
+    }
+  }
+
+  private goDown() {
+    if (this.cursor.row < this.content.length - 1) {
+      this.cursor.row++;
+      this.switchLine();
+    }
+  }
+
+  private switchLine() {
+    const lineLength = this.getCurrentLine().length;
+    if (this.cursor.col >= lineLength) {
+      if (lineLength === 0) {
+        this.cursor.col = 0;
+      } else {
+        this.cursor.col = this.mode === "Insert" ? lineLength : lineLength - 1;
+      }
     }
   }
 }

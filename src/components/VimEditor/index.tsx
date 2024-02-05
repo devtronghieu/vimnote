@@ -10,10 +10,6 @@ interface Props {}
 
 const VimEditor: FC<Props> = ({}) => {
   const snap = useSnapshot(vimState);
-  const charWidth = 10;
-  const charHeight = 18;
-  const width = 400;
-  const height = 200;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -25,6 +21,14 @@ const VimEditor: FC<Props> = ({}) => {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const charWidth = 10;
+  const charHeight = 18;
+  const width = 400;
+  const height = 200;
+  const caretWidth = snap.editor.mode === "Insert" ? 1 : charWidth;
+
+  console.log("-->", snap.editor.cursor.row, snap.editor.cursor.col);
+
   return (
     <Stage
       width={width}
@@ -34,7 +38,7 @@ const VimEditor: FC<Props> = ({}) => {
       }}
       className="with-border p-4"
     >
-      {snap.editor.content.mapToArray((line, row) => {
+      {snap.editor.content.map((line, row) => {
         return (
           <Container key={row} y={row * charHeight}>
             {line.split("").map((char, col) => (
@@ -52,8 +56,8 @@ const VimEditor: FC<Props> = ({}) => {
 
       <Caret
         x={snap.editor.cursor.col * charWidth}
-        y={0}
-        width={1}
+        y={snap.editor.cursor.row * charHeight}
+        width={caretWidth}
         height={charHeight}
       />
 

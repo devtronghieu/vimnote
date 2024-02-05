@@ -8,16 +8,17 @@ interface Props {
   y: number;
   width: number;
   height: number;
+  alpha?: number;
 }
 
-const Caret: FC<Props> = ({ x, y, width, height }) => {
+const Caret: FC<Props> = ({ x, y, width, height, alpha = 0.3 }) => {
   const draw = useCallback(
     (g: GraphicsInterface) => {
       g.clear();
-      g.lineStyle(width, getHexColorNumber("#FF0000"));
+      g.beginFill(getHexColorNumber("#FF0000"), alpha);
       g.drawRect(x, y, width, height);
     },
-    [x, y, width, height],
+    [x, y, width, height, alpha],
   );
 
   return <Graphics draw={draw} />;
