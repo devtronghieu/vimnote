@@ -1,7 +1,8 @@
+import { FC, useCallback } from "react";
+import { animated, useSpring } from "@react-spring/web";
 import { getHexColorNumber } from "@/utils/colors";
 import { Graphics } from "@pixi/react";
 import { Graphics as GraphicsInterface } from "pixi.js";
-import { FC, useCallback } from "react";
 
 interface Props {
   x: number;
@@ -11,17 +12,29 @@ interface Props {
   alpha?: number;
 }
 
+const AnimatedGraphics = animated(Graphics);
+
 const Caret: FC<Props> = ({ x, y, width, height, alpha = 0.3 }) => {
+  const springProps = useSpring({
+    to: { x, y },
+    config: {
+      tension: 500,
+      friction: 30,
+      mass: 0.1,
+      velocity: 10,
+    },
+  });
+
   const draw = useCallback(
     (g: GraphicsInterface) => {
       g.clear();
       g.beginFill(getHexColorNumber("#FF0000"), alpha);
-      g.drawRect(x, y, width, height);
+      g.drawRect(0, 0, width, height);
     },
-    [x, y, width, height, alpha],
+    [width, height, alpha],
   );
 
-  return <Graphics draw={draw} />;
+  return <AnimatedGraphics draw={draw} x={springProps.x} y={springProps.y} />;
 };
 
 export default Caret;
