@@ -1,10 +1,11 @@
 import { proxy } from "valtio";
-import { EditorState } from "./editor/types";
+import { EditorState, Operator, PasteStyle } from "./editor/types";
 import {
   insertText,
   InsertFunctionKeyHandlers,
   NormalKeyHandlers,
   ViewKeyHandlers,
+  NormalOperatorHandlers,
 } from "./editor";
 import { isFunctionKey } from "@/utils/validate";
 
@@ -15,7 +16,10 @@ export interface VimState {
 export const vimState = proxy<VimState>({
   editor: {
     content: [""],
-    clipboard: "",
+    clipboard: [],
+    operator: Operator.None,
+    count: 0,
+    pasteStyle: PasteStyle.Characterwise,
     cursor: { row: 0, col: 0 },
     mode: "Normal",
   },
@@ -26,18 +30,28 @@ export const vimActions = {
     const { mode } = vimState.editor;
 
     if (mode === "Normal") {
-      return NormalKeyHandlers[key] && NormalKeyHandlers[key](vimState.editor);
+      if (parseInt(key)) {
+        vimState.editor.count = vimState.editor.count * 10 + parseInt(key);
+      } else if (vimState.editor.operator !== Operator.None) {
+        if (NormalOperatorHandlers[key]) {
+          NormalOperatorHandlers[key](vimState.editor);
+        }
+        vimState.editor.operator = Operator.None;
+        vimState.editor.count = 0;
+      } else {
+        NormalKeyHandlers[key] && NormalKeyHandlers[key](vimState.editor);
+      }
+      return;
     }
 
     if (mode === "Insert") {
       if (isFunctionKey(key)) {
-        return (
-          InsertFunctionKeyHandlers[key] &&
-          InsertFunctionKeyHandlers[key](vimState.editor)
-        );
+        InsertFunctionKeyHandlers[key] &&
+          InsertFunctionKeyHandlers[key](vimState.editor);
       } else {
-        return insertText(vimState.editor, key);
+        insertText(vimState.editor, key);
       }
+      return;
     }
 
     if (mode === "View") {
