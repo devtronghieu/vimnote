@@ -54,6 +54,11 @@ export class VimEditor {
         this.goRight();
         break;
       }
+      case "A": {
+        this.mode = "Insert";
+        this.cursor.col = this.getCurrentLine().length;
+        break;
+      }
       case "o": {
         this.mode = "Insert";
         this.cursor.row++;
@@ -67,6 +72,14 @@ export class VimEditor {
         this.setCurrentLine("");
         this.cursor.col = 0;
         this.content.splice(this.cursor.row + 1, 0, line);
+        break;
+      }
+      case "$": {
+        this.cursor.col = this.getCurrentLine().length - 1;
+        break;
+      }
+      case "^": {
+        this.cursor.col = 0;
         break;
       }
       case "v":
@@ -111,6 +124,10 @@ export class VimEditor {
             this.setCurrentLine(
               removeCharAtIndex(this.getCurrentLine(), this.cursor.col),
             );
+          } else if (this.cursor.row > 0) {
+            this.content.splice(this.cursor.row, 1);
+            this.cursor.row--;
+            this.cursor.col = this.getCurrentLine().length;
           }
           break;
         }
