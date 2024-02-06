@@ -18,8 +18,8 @@ const Caret: FC<Props> = ({ x, y, width, height, alpha = 0.3 }) => {
   const springProps = useSpring({
     to: { x, y },
     config: {
-      tension: 500,
-      friction: 30,
+      tension: 800,
+      friction: 50,
       mass: 0.1,
       velocity: 10,
     },
