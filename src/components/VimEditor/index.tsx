@@ -1,4 +1,4 @@
-import { vimState } from "@/engines/vim";
+import { vimActions, vimState } from "@/engines/vim";
 import { Container, Stage, Text } from "@pixi/react";
 import { FC, useEffect, useState } from "react";
 import { useSnapshot } from "valtio";
@@ -23,7 +23,7 @@ const VimEditor: FC<Props> = ({}) => {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      vimState.editor.type(e.key);
+      vimActions.type(e.key);
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
