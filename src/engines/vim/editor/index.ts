@@ -63,6 +63,10 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
   l: goRight,
   k: goUp,
   j: goDown,
+  Escape: (state) => {
+    state.operator = Operator.None;
+    state.count = 0;
+  },
 };
 
 export const NormalOperatorHandlers: Record<string, KeyHandler> = {

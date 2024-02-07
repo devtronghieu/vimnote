@@ -30,7 +30,7 @@ export const vimActions = {
     const { mode } = vimState.editor;
 
     if (mode === "Normal") {
-      if (parseInt(key)) {
+      if (!isNaN(parseInt(key))) {
         vimState.editor.count = vimState.editor.count * 10 + parseInt(key);
       } else if (vimState.editor.operator !== Operator.None) {
         if (NormalOperatorHandlers[key]) {
