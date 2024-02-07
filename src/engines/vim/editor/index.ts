@@ -90,8 +90,8 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
 
     state.content.splice(state.cursor.row, linesToSplice);
 
-    if (state.cursor.row > 0) {
-      state.cursor.row--;
+    if (state.cursor.row > state.content.length - 1) {
+      state.cursor.row = state.content.length - 1;
     }
 
     placeColOnNewRow(state);
