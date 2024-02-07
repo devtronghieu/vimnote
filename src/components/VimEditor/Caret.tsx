@@ -20,8 +20,8 @@ const Caret: FC<Props> = ({ x, y, width, height, alpha = 0.3 }) => {
     config: {
       tension: 800,
       friction: 50,
-      mass: 0.1,
-      velocity: 10,
+      mass: 0.05,
+      velocity: 8,
     },
   });
 
