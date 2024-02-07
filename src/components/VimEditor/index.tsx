@@ -21,21 +21,26 @@ const VimEditor: FC<Props> = ({}) => {
     vimState.editor.content.length.toString().length,
   );
 
+  const caretWidth = snap.editor.mode === "Insert" ? 1 : charWidth;
+  const lineNumberWidth =
+    maxLineNumberDigits * charWidth + gapBetweenLineNumberAndTextArea;
+  const textWidth = width - lineNumberWidth;
+  const maxCharsPerRow = Math.floor(textWidth / charWidth);
+
   useEffect(() => {
+    console.log("--> maxCharsPerRow", maxCharsPerRow);
+    vimState.editor.setMaxCharsPerRow(maxCharsPerRow);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       vimActions.type(e.key);
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [maxCharsPerRow]);
 
   useEffect(() => {
     setMaxLineNumberDigits(vimState.editor.content.length.toString().length);
   }, [snap.editor.content.length]);
-
-  const caretWidth = snap.editor.mode === "Insert" ? 1 : charWidth;
-  const lineNumberWidth =
-    maxLineNumberDigits * charWidth + gapBetweenLineNumberAndTextArea;
 
   return (
     <Stage
@@ -64,16 +69,20 @@ const VimEditor: FC<Props> = ({}) => {
                 />
               ))}
 
-            {line.split("").map((char, col) => (
-              <Char
-                key={col}
-                text={char}
-                x={lineNumberWidth + col * charWidth}
-                y={(rowHeight - charHeight) / 2}
-                width={charWidth}
-                height={charHeight}
-              />
-            ))}
+            {line.map((segment, idx) => {
+              return segment
+                .split("")
+                .map((char, col) => (
+                  <Char
+                    key={col}
+                    text={char}
+                    x={lineNumberWidth + col * charWidth}
+                    y={idx * rowHeight + (rowHeight - charHeight) / 2}
+                    width={charWidth}
+                    height={charHeight}
+                  />
+                ));
+            })}
           </Container>
         );
       })}

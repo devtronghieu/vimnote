@@ -1,41 +1,35 @@
 import { proxy } from "valtio";
-import { EditorState, Operator, PasteStyle } from "./editor/types";
 import {
-  insertText,
-  InsertFunctionKeyHandlers,
-  NormalKeyHandlers,
-  ViewKeyHandlers,
+  VimEditor,
+  Operator,
   NormalOperatorHandlers,
+  NormalKeyHandlers,
+  InsertFunctionHandlers,
+  ViewKeyHandlers,
 } from "./editor";
 import { isFunctionKey } from "@/utils/validate";
+import { Mode } from "./internal";
 
 export interface VimState {
-  editor: EditorState;
+  editor: VimEditor;
 }
 
 export const vimState = proxy<VimState>({
-  editor: {
-    content: [""],
-    clipboard: [],
-    operator: Operator.None,
-    count: 0,
-    pasteStyle: PasteStyle.Characterwise,
-    cursor: { row: 0, col: 0 },
-    mode: "Normal",
-  },
+  editor: new VimEditor(),
 });
 
 export const vimActions = {
   type: (key: string) => {
-    const { mode } = vimState.editor;
+    const { mode, count } = vimState.editor;
 
-    if (mode === "Normal") {
+    console.log("--> pressed", key);
+
+    if (mode === Mode.Normal) {
       if (!isNaN(parseInt(key))) {
-        vimState.editor.count = vimState.editor.count * 10 + parseInt(key);
+        vimState.editor.count = count * 10 + parseInt(key);
       } else if (vimState.editor.operator !== Operator.None) {
-        if (NormalOperatorHandlers[key]) {
+        NormalOperatorHandlers[key] &&
           NormalOperatorHandlers[key](vimState.editor);
-        }
         vimState.editor.operator = Operator.None;
         vimState.editor.count = 0;
       } else {
@@ -44,18 +38,19 @@ export const vimActions = {
       return;
     }
 
-    if (mode === "Insert") {
+    if (mode === Mode.Insert) {
       if (isFunctionKey(key)) {
-        InsertFunctionKeyHandlers[key] &&
-          InsertFunctionKeyHandlers[key](vimState.editor);
+        InsertFunctionHandlers[key] &&
+          InsertFunctionHandlers[key](vimState.editor);
       } else {
-        insertText(vimState.editor, key);
+        vimState.editor.insertAtCursor(key);
       }
       return;
     }
 
-    if (mode === "View") {
-      return ViewKeyHandlers[key] && ViewKeyHandlers[key](vimState.editor);
+    if (mode === Mode.View) {
+      ViewKeyHandlers[key] && ViewKeyHandlers[key](vimState.editor);
+      return;
     }
   },
 };

@@ -1,4 +1,8 @@
-export type Mode = "Normal" | "Insert" | "View";
+export enum Mode {
+  Normal = "Normal",
+  Insert = "Insert",
+  View = "View",
+}
 
 export interface KeymapDetail {
   desc: string;
