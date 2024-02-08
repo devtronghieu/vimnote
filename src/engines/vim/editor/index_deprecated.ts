@@ -1,5 +1,5 @@
 import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
-import { VimEditor, KeyHandler, Operator, PasteStyle } from ".";
+import { VimEditor, KeyHandler, Operator, PasteStyle } from "./modes/view";
 import {
   getCurrentRow,
   getCurrentSegment,

@@ -2,17 +2,18 @@ import { proxy } from "valtio";
 import {} from ".";
 import { isFunctionKey } from "@/utils/validate";
 import { Mode } from "./internal";
+import { Operator, VimEditorState } from "./editor/types";
 import {
-  InsertFunctionHandlers,
-  NormalKeyHandlers,
-  NormalOperatorHandlers,
-  Operator,
-  ViewKeyHandlers,
-  VimEditorState,
   createVimEditorState,
   insertAtCursor,
   setMaxCharsPerRow,
-} from "./editor";
+} from "./editor/utils";
+import {
+  NormalKeyHandlers,
+  NormalOperatorHandlers,
+} from "./editor/modes/normal";
+import { InsertFunctionHandlers } from "./editor/modes/insert";
+import { ViewKeyHandlers } from "./editor/modes/view";
 
 export const vimState = proxy<VimEditorState>(createVimEditorState());
 
