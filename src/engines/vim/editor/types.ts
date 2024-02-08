@@ -3,7 +3,7 @@ import { Mode } from "../internal";
 /**
  * A empty row is \[""\]
  */
-interface CursorPosition {
+export interface CursorPosition {
   row: number;
   col: number;
   segment: number;

@@ -49,7 +49,7 @@ export const vimActions = {
     }
   },
 
-  countSegmenstBeforeRow: (row: number) => {
+  countSegmentsBeforeRow: (row: number) => {
     return vimState.content
       .slice(0, row)
       .reduce((acc, cur) => acc + cur.length, 0);
