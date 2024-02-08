@@ -1,6 +1,9 @@
 import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
 import { Mode } from "../internal";
 
+/**
+ * A empty row is \[""\]
+ */
 interface CursorPosition {
   row: number;
   col: number;
@@ -166,10 +169,13 @@ export function normalizeContentFromThisSegment({
   }
 
   state.content[row] = [...state.content[row], ...newSegments];
+
+  if (state.content[row].length === 0) {
+    state.content[row] = [""];
+  }
 }
 
 export function insertAtCursor(state: VimEditorState, text: string): void {
-  console.log("--> insert at", state.cursor, getCurrRow(state));
   setCurrSegment(
     state,
     addStringAtIndex({
@@ -266,17 +272,50 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
 export const NormalOperatorHandlers: Record<string, KeyHandler> = {};
 
 export const InsertFunctionHandlers: Record<string, KeyHandler> = {
+  Enter: (state) => {
+    let remainingText = getCurrSegment(state).slice(state.cursor.col);
+    remainingText += getCurrRow(state)
+      .splice(state.cursor.segment + 1)
+      .reduce((acc, cur) => acc + cur, "");
+
+    setCurrSegment(state, getCurrSegment(state).slice(0, state.cursor.col));
+
+    state.cursor.row++;
+    state.cursor.segment = 0;
+    state.cursor.col = 0;
+    state.content.splice(state.cursor.row, 0, [remainingText]);
+
+    normalizeContentFromThisSegment({
+      state,
+      row: state.cursor.row,
+      segment: state.cursor.segment,
+    });
+  },
   Backspace: (state) => {
     if (state.cursor.col > 0) {
       state.cursor.col--;
-    } else if (state.cursor.row !== 0 || state.cursor.segment !== 0) {
+      setCurrSegment(
+        state,
+        removeCharAtIndex(getCurrSegment(state), state.cursor.col),
+      );
+    } else if (state.cursor.segment > 0) {
       state.cursor.segment--;
       state.cursor.col = getCurrSegmentLen(state) - 1;
+      setCurrSegment(
+        state,
+        removeCharAtIndex(getCurrSegment(state), state.cursor.col),
+      );
+    } else if (state.cursor.row > 0) {
+      const remainingText = getCurrRow(state).reduce(
+        (acc, cur) => acc + cur,
+        "",
+      );
+      state.cursor.row--;
+      state.cursor.segment = getCurrRow(state).length - 1;
+      state.cursor.col = getCurrSegmentLen(state);
+      setCurrSegment(state, getCurrSegment(state) + remainingText);
+      state.content.splice(state.cursor.row + 1, 1);
     }
-    setCurrSegment(
-      state,
-      removeCharAtIndex(getCurrSegment(state), state.cursor.col),
-    );
 
     if (!isContentEmpty(state)) {
       normalizeContentFromThisSegment({
