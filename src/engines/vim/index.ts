@@ -1,56 +1,58 @@
 import { proxy } from "valtio";
-import {
-  VimEditor,
-  Operator,
-  NormalOperatorHandlers,
-  NormalKeyHandlers,
-  InsertFunctionHandlers,
-  ViewKeyHandlers,
-} from "./editor";
+import {} from ".";
 import { isFunctionKey } from "@/utils/validate";
 import { Mode } from "./internal";
+import {
+  InsertFunctionHandlers,
+  NormalKeyHandlers,
+  NormalOperatorHandlers,
+  Operator,
+  ViewKeyHandlers,
+  VimEditorState,
+  createVimEditorState,
+  insertAtCursor,
+  setMaxCharsPerRow,
+} from "./editor";
 
-export interface VimState {
-  editor: VimEditor;
-}
-
-export const vimState = proxy<VimState>({
-  editor: new VimEditor(),
-});
+export const vimState = proxy<VimEditorState>(createVimEditorState());
 
 export const vimActions = {
   type: (key: string) => {
-    const { mode, count } = vimState.editor;
-
-    console.log("--> pressed", key);
+    const { mode, count } = vimState;
 
     if (mode === Mode.Normal) {
       if (!isNaN(parseInt(key))) {
-        vimState.editor.count = count * 10 + parseInt(key);
-      } else if (vimState.editor.operator !== Operator.None) {
-        NormalOperatorHandlers[key] &&
-          NormalOperatorHandlers[key](vimState.editor);
-        vimState.editor.operator = Operator.None;
-        vimState.editor.count = 0;
+        vimState.count = count * 10 + parseInt(key);
+      } else if (vimState.operator !== Operator.None) {
+        NormalOperatorHandlers[key] && NormalOperatorHandlers[key](vimState);
+        vimState.operator = Operator.None;
+        vimState.count = 0;
       } else {
-        NormalKeyHandlers[key] && NormalKeyHandlers[key](vimState.editor);
+        NormalKeyHandlers[key] && NormalKeyHandlers[key](vimState);
       }
       return;
     }
 
     if (mode === Mode.Insert) {
       if (isFunctionKey(key)) {
-        InsertFunctionHandlers[key] &&
-          InsertFunctionHandlers[key](vimState.editor);
+        InsertFunctionHandlers[key] && InsertFunctionHandlers[key](vimState);
       } else {
-        vimState.editor.insertAtCursor(key);
+        insertAtCursor(vimState, key);
       }
       return;
     }
 
     if (mode === Mode.View) {
-      ViewKeyHandlers[key] && ViewKeyHandlers[key](vimState.editor);
+      ViewKeyHandlers[key] && ViewKeyHandlers[key](vimState);
       return;
     }
   },
+
+  countSegmenstBeforeRow: (row: number) => {
+    return vimState.content
+      .slice(0, row)
+      .reduce((acc, cur) => acc + cur.length, 0);
+  },
+
+  setMaxCharsPerRow: (max: number) => setMaxCharsPerRow(vimState, max),
 };

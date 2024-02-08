@@ -1,4 +1,8 @@
-import { addStringAtIndex } from "@/utils/strings";
+import {
+  addStringAtIndex,
+  removeCharAtIndex,
+  truncateOverflow,
+} from "@/utils/strings";
 import { Mode } from "../internal";
 
 interface CursorPosition {
@@ -19,181 +23,258 @@ export enum PasteStyle {
   Blockwise,
 }
 
-export class VimEditor {
-  content: string[][] = [[""]];
-  clipboard: string[][] = [];
-  maxCharsPerRow: number = 0;
-  operator: Operator = 0;
-  count: number = 0;
-  pasteStyle: PasteStyle = PasteStyle.Characterwise;
-  cursor: CursorPosition = { row: 0, col: 0, segment: 0 };
-  mode: Mode = Mode.Normal;
+export interface VimEditorState {
+  content: string[][];
+  clipboard: string[][];
+  maxCharsPerRow: number;
+  operator: Operator;
+  count: number;
+  pasteStyle: PasteStyle;
+  cursor: CursorPosition;
+  mode: Mode;
+}
 
-  setMaxCharsPerRow(max: number): void {
-    this.maxCharsPerRow = max;
-  }
+export function createVimEditorState(): VimEditorState {
+  return {
+    content: [[""]],
+    clipboard: [],
+    maxCharsPerRow: 0,
+    operator: Operator.None,
+    count: 0,
+    pasteStyle: PasteStyle.Characterwise,
+    cursor: { row: 0, col: 0, segment: 0 },
+    mode: Mode.Normal,
+  };
+}
 
-  adjustCursorOnNewSegment(): void {
-    const segmentLength = this.getCurrSegment().length;
-    if (this.cursor.col >= segmentLength) {
-      this.cursor.col =
-        this.mode === Mode.Insert
-          ? segmentLength
-          : Math.max(segmentLength - 1, 0);
-    }
-  }
+export function setMaxCharsPerRow(state: VimEditorState, max: number): void {
+  state.maxCharsPerRow = max;
+}
 
-  getCurrRow(): string[] {
-    return this.content[this.cursor.row];
-  }
-
-  getCurrRowLen(): number {
-    return this.content[this.cursor.row].length;
-  }
-
-  getCurrSegment(): string {
-    return this.getCurrRow()[this.cursor.segment];
-  }
-
-  getCurrSegmentLen(): number {
-    return this.getCurrRow()[this.cursor.segment].length;
-  }
-
-  setRow(props: { row: number; segments: string[] }): void {
-    this.content[props.row] = props.segments;
-  }
-
-  setCurrSegment(value: string): void {
-    this.content[this.cursor.row][this.cursor.segment] = value;
-  }
-
-  moveLeft(): void {
-    if (this.getCurrSegmentLen() > 0) {
-      this.cursor.col--;
-    }
-  }
-
-  moveRight(): void {
-    let maxReach = this.getCurrSegmentLen();
-    if (this.mode !== Mode.Insert) {
-      maxReach--;
-    }
-    if (this.cursor.col < maxReach) {
-      this.cursor.col++;
-    }
-  }
-
-  moveUp(): void {
-    if (this.cursor.segment > 0) {
-      this.cursor.segment--;
-      this.adjustCursorOnNewSegment();
-    } else if (this.cursor.row > 0) {
-      this.cursor.row--;
-      this.adjustCursorOnNewSegment();
-    }
-  }
-
-  moveDown(): void {
-    if (this.cursor.segment < this.getCurrSegment().length - 1) {
-      this.cursor.segment++;
-      this.adjustCursorOnNewSegment();
-    } else if (this.cursor.row < this.content.length - 1) {
-      this.cursor.row++;
-      this.adjustCursorOnNewSegment();
-    }
-  }
-
-  insertAtCursor(text: string): void {
-    this.setCurrSegment(
-      addStringAtIndex({
-        baseString: this.getCurrSegment(),
-        stringToAdd: text,
-        index: this.cursor.col,
-      }),
-    );
-
-    this.cursor.col++;
-
-    const currRow = this.getCurrRow();
-    let segment = this.cursor.segment;
-    if (currRow[segment].length > this.maxCharsPerRow) {
-      const overflowText = currRow[segment].slice(this.maxCharsPerRow);
-      segment++;
-      if (currRow[segment]) {
-        currRow[segment] = overflowText + currRow[segment];
-      } else {
-        currRow.push(overflowText);
-      }
-    }
+export function adjustCursorOnNewSegment(state: VimEditorState): void {
+  const segmentLength = getCurrSegment(state).length;
+  if (state.cursor.col >= segmentLength) {
+    state.cursor.col =
+      state.mode === Mode.Insert
+        ? segmentLength
+        : Math.max(segmentLength - 1, 0);
   }
 }
 
-type KeyHandler = (editor: VimEditor) => void;
+export function getCurrRow(state: VimEditorState): string[] {
+  return state.content[state.cursor.row];
+}
+
+export function countCurrSegments(state: VimEditorState): number {
+  return state.content[state.cursor.row].length;
+}
+
+export function getCurrSegment(state: VimEditorState): string {
+  return getCurrRow(state)[state.cursor.segment];
+}
+
+export function getCurrSegmentLen(state: VimEditorState): number {
+  return getCurrRow(state)[state.cursor.segment].length;
+}
+
+export function setRow(
+  state: VimEditorState,
+  props: { row: number; segments: string[] },
+): void {
+  state.content[props.row] = props.segments;
+}
+
+export function setCurrSegment(state: VimEditorState, value: string): void {
+  state.content[state.cursor.row][state.cursor.segment] = value;
+}
+
+export function moveLeft(state: VimEditorState): void {
+  if (state.cursor.col > 0) {
+    state.cursor.col--;
+  }
+}
+
+export function moveRight(state: VimEditorState): void {
+  const maxReach = getCurrSegmentLen(state);
+  if (state.mode !== Mode.Insert) {
+    state.cursor.col = Math.min(state.cursor.col + 1, maxReach - 1);
+  } else {
+    state.cursor.col = Math.min(state.cursor.col + 1, maxReach);
+  }
+}
+
+export function moveUp(state: VimEditorState): void {
+  if (state.cursor.segment > 0) {
+    state.cursor.segment--;
+    adjustCursorOnNewSegment(state);
+  } else if (state.cursor.row > 0) {
+    state.cursor.row--;
+    state.cursor.segment = countCurrSegments(state) - 1;
+    adjustCursorOnNewSegment(state);
+  }
+}
+
+export function moveDown(state: VimEditorState): void {
+  if (state.cursor.segment < countCurrSegments(state) - 1) {
+    state.cursor.segment++;
+    adjustCursorOnNewSegment(state);
+  } else if (state.cursor.row < state.content.length - 1) {
+    state.cursor.row++;
+    state.cursor.segment = 0;
+    adjustCursorOnNewSegment(state);
+  }
+}
+
+interface NormalizeContentFromThisSegmentProps {
+  state: VimEditorState;
+  row: number;
+  segment: number;
+}
+function normalizeContentFromThisSegment({
+  state,
+  row,
+  segment,
+}: NormalizeContentFromThisSegmentProps) {
+  let remainingText = state.content[row]
+    .splice(segment)
+    .reduce((acc, cur) => acc + cur, "");
+
+  const newSegments: string[] = [];
+  for (
+    let i = 0;
+    i < Math.ceil(remainingText.length / state.maxCharsPerRow);
+    i++
+  ) {
+    newSegments.push(
+      remainingText.slice(
+        i * state.maxCharsPerRow,
+        (i + 1) * state.maxCharsPerRow,
+      ),
+    );
+  }
+
+  state.content[row] = [...state.content[row], ...newSegments];
+}
+
+export function insertAtCursor(state: VimEditorState, text: string): void {
+  console.log("--> insert at", state.cursor, getCurrRow(state));
+  setCurrSegment(
+    state,
+    addStringAtIndex({
+      baseString: getCurrSegment(state),
+      stringToAdd: text,
+      index: state.cursor.col,
+    }),
+  );
+
+  const isOverflowed = getCurrSegmentLen(state) >= state.maxCharsPerRow;
+
+  if (isOverflowed) {
+    normalizeContentFromThisSegment({
+      state,
+      row: state.cursor.row,
+      segment: state.cursor.segment,
+    });
+  }
+
+  if (state.cursor.col === state.maxCharsPerRow - 1) {
+    state.cursor.segment++;
+    state.cursor.col = 0;
+    if (!getCurrRow(state)[state.cursor.segment]) {
+      getCurrRow(state).push("");
+    }
+  } else {
+    state.cursor.col++;
+  }
+}
+
+type KeyHandler = (editor: VimEditorState) => void;
 
 export const NormalKeyHandlers: Record<string, KeyHandler> = {
-  i: (editor) => {
-    editor.mode = Mode.Insert;
+  i: (state) => {
+    state.mode = Mode.Insert;
   },
-  a: (editor) => {
-    editor.mode = Mode.Insert;
-    editor.moveRight();
-    console.log("--> appended", editor.mode);
+  a: (state) => {
+    state.mode = Mode.Insert;
+    moveRight(state);
   },
-  A: (editor) => {
-    editor.mode = Mode.Insert;
-    editor.cursor.col = editor.getCurrSegmentLen();
+  A: (state) => {
+    state.mode = Mode.Insert;
+    state.cursor.col = getCurrSegmentLen(state);
   },
-  o: (editor) => {
-    editor.mode = Mode.Insert;
-    editor.cursor.row++;
-    editor.cursor.segment = 0;
-    editor.cursor.col = 0;
-    editor.content.splice(editor.cursor.row, 0, [""]);
+  o: (state) => {
+    state.mode = Mode.Insert;
+    state.cursor.row++;
+    state.cursor.segment = 0;
+    state.cursor.col = 0;
+    state.content.splice(state.cursor.row, 0, [""]);
   },
-  O: (editor) => {
-    editor.mode = Mode.Insert;
-    const row = editor.getCurrRow();
-    editor.setRow({
-      row: editor.cursor.row,
+  O: (state) => {
+    state.mode = Mode.Insert;
+    const row = getCurrRow(state);
+    setRow(state, {
+      row: state.cursor.row,
       segments: [""],
     });
-    editor.cursor.segment = 0;
-    editor.cursor.col = 0;
-    editor.content.splice(editor.cursor.row + 1, 0, row);
+    state.cursor.segment = 0;
+    state.cursor.col = 0;
+    state.content.splice(state.cursor.row + 1, 0, row);
   },
-  p: (editor) => {
-    if (editor.pasteStyle === PasteStyle.Characterwise) {
+  p: (state) => {
+    if (state.pasteStyle === PasteStyle.Characterwise) {
       // TODO: Handle paste char/word
-    } else if (editor.pasteStyle === PasteStyle.Linewise) {
+    } else if (state.pasteStyle === PasteStyle.Linewise) {
       // TODO: Handle paste line
-    } else if (editor.pasteStyle === PasteStyle.Blockwise) {
+    } else if (state.pasteStyle === PasteStyle.Blockwise) {
       // TODO: Handle paste block
     }
   },
-  $: (editor) => {
-    editor.cursor.col = editor.getCurrSegmentLen() - 1;
+  $: (state) => {
+    state.cursor.col = getCurrSegmentLen(state) - 1;
   },
-  "^": (editor) => {
-    editor.cursor.col = 0;
+  "^": (state) => {
+    state.cursor.col = 0;
   },
-  h: (editor) => editor.moveLeft,
-  l: (editor) => editor.moveRight,
-  k: (editor) => editor.moveUp,
-  j: (editor) => editor.moveDown,
-  d: (editor) => {
-    editor.operator = Operator.Delete;
+  h: (state) => moveLeft(state),
+  l: (state) => moveRight(state),
+  k: (state) => moveUp(state),
+  j: (state) => moveDown(state),
+  d: (state) => {
+    state.operator = Operator.Delete;
   },
-  y: (editor) => {
-    editor.operator = Operator.Copy;
+  y: (state) => {
+    state.operator = Operator.Copy;
   },
-  Escape: (editor) => {
-    editor.operator = Operator.None;
-    editor.count = 0;
+  Escape: (state) => {
+    state.operator = Operator.None;
+    state.count = 0;
   },
 };
 
 export const NormalOperatorHandlers: Record<string, KeyHandler> = {};
 
-export const InsertFunctionHandlers: Record<string, KeyHandler> = {};
+export const InsertFunctionHandlers: Record<string, KeyHandler> = {
+  Backspace: (state) => {
+    if (state.cursor.col > 0) {
+      state.cursor.col--;
+    } else if (state.cursor.row !== 0 || state.cursor.segment !== 0) {
+      state.cursor.segment--;
+      state.cursor.col = getCurrSegmentLen(state) - 1;
+    }
+    setCurrSegment(
+      state,
+      removeCharAtIndex(getCurrSegment(state), state.cursor.col),
+    );
+    normalizeContentFromThisSegment({
+      state,
+      row: state.cursor.row,
+      segment: state.cursor.segment,
+    });
+  },
+  Escape: (state) => {
+    state.mode = Mode.Normal;
+    moveLeft(state);
+  },
+};
 
 export const ViewKeyHandlers: Record<string, KeyHandler> = {};

@@ -5,6 +5,7 @@ import { useSnapshot } from "valtio";
 import Char from "./Char";
 import { getHexColorNumber } from "@/utils/colors";
 import Caret from "./Caret";
+import { TextStyle } from "pixi.js";
 
 interface Props {}
 
@@ -18,18 +19,16 @@ const gapBetweenLineNumberAndTextArea = 10;
 const VimEditor: FC<Props> = ({}) => {
   const snap = useSnapshot(vimState);
   const [maxLineNumberDigits, setMaxLineNumberDigits] = useState(
-    vimState.editor.content.length.toString().length,
+    vimState.content.length.toString().length,
   );
 
-  const caretWidth = snap.editor.mode === "Insert" ? 1 : charWidth;
   const lineNumberWidth =
     maxLineNumberDigits * charWidth + gapBetweenLineNumberAndTextArea;
   const textWidth = width - lineNumberWidth;
   const maxCharsPerRow = Math.floor(textWidth / charWidth);
 
   useEffect(() => {
-    console.log("--> maxCharsPerRow", maxCharsPerRow);
-    vimState.editor.setMaxCharsPerRow(maxCharsPerRow);
+    vimActions.setMaxCharsPerRow(maxCharsPerRow);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       vimActions.type(e.key);
@@ -39,21 +38,29 @@ const VimEditor: FC<Props> = ({}) => {
   }, [maxCharsPerRow]);
 
   useEffect(() => {
-    setMaxLineNumberDigits(vimState.editor.content.length.toString().length);
-  }, [snap.editor.content.length]);
+    setMaxLineNumberDigits(vimState.content.length.toString().length);
+  }, [snap.content.length]);
+
+  const caretWidth = snap.mode === "Insert" ? 1 : charWidth;
+  const caretY =
+    rowHeight *
+    (vimActions.countSegmenstBeforeRow(snap.cursor.row) + snap.cursor.segment);
 
   return (
     <Stage
       width={width}
       height={height}
       options={{
-        backgroundColor: getHexColorNumber("#ffffff"),
+        backgroundAlpha: 0,
       }}
       className="with-border p-4"
     >
-      {snap.editor.content.map((line, row) => {
+      {snap.content.map((line, row) => {
         return (
-          <Container key={row} y={row * rowHeight}>
+          <Container
+            key={row}
+            y={vimActions.countSegmenstBeforeRow(row) * rowHeight}
+          >
             {(row + 1)
               .toString()
               .split("")
@@ -88,15 +95,21 @@ const VimEditor: FC<Props> = ({}) => {
       })}
 
       <Caret
-        x={lineNumberWidth + snap.editor.cursor.col * charWidth}
-        y={snap.editor.cursor.row * rowHeight}
+        x={lineNumberWidth + snap.cursor.col * charWidth}
+        y={caretY}
         width={caretWidth}
         height={rowHeight}
       />
 
-      <Container y={height - charHeight}>
-        <Text text={snap.editor.mode} height={charHeight} />
-      </Container>
+      <Text
+        text={snap.mode}
+        y={height - rowHeight}
+        style={
+          new TextStyle({
+            fontSize: 16,
+          })
+        }
+      />
     </Stage>
   );
 };
