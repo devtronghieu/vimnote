@@ -1,8 +1,4 @@
-import {
-  addStringAtIndex,
-  removeCharAtIndex,
-  truncateOverflow,
-} from "@/utils/strings";
+import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
 import { Mode } from "../internal";
 
 interface CursorPosition {
@@ -125,12 +121,28 @@ export function moveDown(state: VimEditorState): void {
   }
 }
 
+export function isContentEmpty(state: VimEditorState) {
+  if (state.content.length > 1) {
+    return false;
+  }
+
+  if (state.content[0].length > 1) {
+    return false;
+  }
+
+  if (state.content[0][0].length > 0) {
+    return false;
+  }
+
+  return true;
+}
+
 interface NormalizeContentFromThisSegmentProps {
   state: VimEditorState;
   row: number;
   segment: number;
 }
-function normalizeContentFromThisSegment({
+export function normalizeContentFromThisSegment({
   state,
   row,
   segment,
@@ -265,11 +277,14 @@ export const InsertFunctionHandlers: Record<string, KeyHandler> = {
       state,
       removeCharAtIndex(getCurrSegment(state), state.cursor.col),
     );
-    normalizeContentFromThisSegment({
-      state,
-      row: state.cursor.row,
-      segment: state.cursor.segment,
-    });
+
+    if (!isContentEmpty(state)) {
+      normalizeContentFromThisSegment({
+        state,
+        row: state.cursor.row,
+        segment: state.cursor.segment,
+      });
+    }
   },
   Escape: (state) => {
     state.mode = Mode.Normal;
