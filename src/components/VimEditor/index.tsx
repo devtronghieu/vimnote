@@ -1,42 +1,73 @@
 import { vimActions, vimState } from "@/engines/vim";
 import { Container, Stage } from "@pixi/react";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useSnapshot } from "valtio";
 import Char from "./Char";
 import Caret from "./Caret";
 import StatusLine from "./StatusLine";
 
-interface Props {}
+interface Props {
+  containerWidth?: number;
+  containerHeight?: number;
+  statusLineHeight?: number;
+  charWidth?: number;
+  charHeight?: number;
+  rowHeight?: number;
+  gapBetweenLineNumberAndTextArea?: number;
+}
 
-const charWidth = 10;
-const charHeight = 18;
-const rowHeight = 22;
-const containerWidth = 400;
-const containerHeight = 200;
-const gapBetweenLineNumberAndTextArea = 10;
-const statusLineHeight = 20;
-const codeHeight = containerHeight - statusLineHeight;
-const maxRowsDisplayed = Math.floor(codeHeight / rowHeight);
+const VimEditor: FC<Props> = ({
+  containerWidth = 400,
+  containerHeight = 200,
+  statusLineHeight = 20,
+  charWidth = 10,
+  charHeight = 18,
+  rowHeight = 22,
+  gapBetweenLineNumberAndTextArea = 10,
+}) => {
+  const { content, mode, cursor } = useSnapshot(vimState);
 
-const VimEditor: FC<Props> = ({}) => {
-  const snap = useSnapshot(vimState);
-  const [maxLineNumberDigits, setMaxLineNumberDigits] = useState(
-    vimState.content.length.toString().length,
-  );
   const [codeViewStartFromSegment, setCodeViewStartFromSegment] = useState(0);
 
-  const lineNumberWidth =
-    maxLineNumberDigits * charWidth + gapBetweenLineNumberAndTextArea;
+  const maxRowsDisplayed = useMemo(() => {
+    const codeHeight = containerHeight - statusLineHeight;
+    return Math.floor(codeHeight / rowHeight);
+  }, [containerHeight, rowHeight, statusLineHeight]);
 
-  const textWidth = containerWidth - lineNumberWidth;
+  const maxLineNumberDigits = useMemo(
+    () => content.length.toString().length,
+    [content.length],
+  );
 
-  const maxCharsPerRow = Math.floor(textWidth / charWidth);
+  const lineNumberWidth = useMemo(
+    () => maxLineNumberDigits * charWidth + gapBetweenLineNumberAndTextArea,
+    [charWidth, gapBetweenLineNumberAndTextArea, maxLineNumberDigits],
+  );
 
-  const segmentsBeforeRow = vimActions.countSegmentsBeforeRow(snap.cursor.row);
+  const textWidth = useMemo(
+    () => containerWidth - lineNumberWidth,
+    [containerWidth, lineNumberWidth],
+  );
 
-  const caretWidth = snap.mode === "Insert" ? 1 : charWidth;
+  const maxCharsPerRow = useMemo(
+    () => Math.floor(textWidth / charWidth),
+    [charWidth, textWidth],
+  );
 
-  const caretY = rowHeight * (segmentsBeforeRow + snap.cursor.segment);
+  const segmentsBeforeRow = useMemo(
+    () => vimActions.countSegmentsBeforeRow(cursor.row),
+    [cursor.row],
+  );
+
+  const caretWidth = useMemo(
+    () => (mode === "Insert" ? 1 : charWidth),
+    [charWidth, mode],
+  );
+
+  const caretY = useMemo(
+    () => rowHeight * (segmentsBeforeRow + cursor.segment),
+    [rowHeight, segmentsBeforeRow, cursor.segment],
+  );
 
   useEffect(() => {
     vimActions.setMaxCharsPerRow(maxCharsPerRow);
@@ -50,7 +81,7 @@ const VimEditor: FC<Props> = ({}) => {
 
   // TODO: need to optimize this scrolling behavior
   useEffect(() => {
-    const currentSegmentIdx = segmentsBeforeRow + snap.cursor.segment;
+    const currentSegmentIdx = segmentsBeforeRow + vimState.cursor.segment;
     const codeViewEndInSegment =
       codeViewStartFromSegment + maxRowsDisplayed - 1;
 
@@ -64,11 +95,12 @@ const VimEditor: FC<Props> = ({}) => {
         codeViewStartFromSegment + (currentSegmentIdx - codeViewEndInSegment),
       );
     }
-  }, [codeViewStartFromSegment, segmentsBeforeRow, snap.cursor.segment]);
-
-  useEffect(() => {
-    setMaxLineNumberDigits(vimState.content.length.toString().length);
-  }, [snap.content.length]);
+  }, [
+    codeViewStartFromSegment,
+    segmentsBeforeRow,
+    cursor.segment,
+    maxRowsDisplayed,
+  ]);
 
   console.log("--> rerender");
 
@@ -82,7 +114,7 @@ const VimEditor: FC<Props> = ({}) => {
       className="with-border p-4"
     >
       <Container y={-codeViewStartFromSegment * rowHeight}>
-        {snap.content.map((line, row) => {
+        {content.map((line, row) => {
           return (
             <Container
               key={row}
@@ -122,7 +154,7 @@ const VimEditor: FC<Props> = ({}) => {
         })}
 
         <Caret
-          x={lineNumberWidth + snap.cursor.col * charWidth}
+          x={lineNumberWidth + cursor.col * charWidth}
           y={caretY}
           width={caretWidth}
           height={rowHeight}
@@ -134,8 +166,8 @@ const VimEditor: FC<Props> = ({}) => {
         y={containerHeight - statusLineHeight}
         width={containerWidth}
         height={statusLineHeight}
-        mode={snap.mode}
-        cursor={snap.cursor}
+        mode={mode}
+        cursor={cursor}
       />
     </Stage>
   );
