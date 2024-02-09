@@ -5,6 +5,7 @@ import { useSnapshot } from "valtio";
 import Char from "./Char";
 import Caret from "./Caret";
 import StatusLine from "./StatusLine";
+import Line from "./Line";
 
 interface Props {
   containerWidth?: number;
@@ -102,15 +103,11 @@ const VimEditor: FC<Props> = ({
     maxRowsDisplayed,
   ]);
 
-  console.log("--> rerender");
-
   return (
     <Stage
       width={containerWidth}
       height={containerHeight}
-      options={{
-        backgroundAlpha: 0,
-      }}
+      options={{ backgroundAlpha: 0 }}
       className="with-border p-4"
     >
       <Container y={-codeViewStartFromSegment * rowHeight}>
@@ -135,20 +132,14 @@ const VimEditor: FC<Props> = ({
                   />
                 ))}
 
-              {line.map((segment, idx) => {
-                return segment
-                  .split("")
-                  .map((char, col) => (
-                    <Char
-                      key={col}
-                      text={char}
-                      x={lineNumberWidth + col * charWidth}
-                      y={idx * rowHeight + (rowHeight - charHeight) / 2}
-                      width={charWidth}
-                      height={charHeight}
-                    />
-                  ));
-              })}
+              <Line
+                x={lineNumberWidth}
+                y={0}
+                segments={line as string[]}
+                rowHeight={rowHeight}
+                charHeight={charHeight}
+                charWidth={charWidth}
+              />
             </Container>
           );
         })}
