@@ -1,13 +1,16 @@
+import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
 import { Mode } from "../../internal";
 import { KeyHandler, Operator, PasteStyle } from "../types";
 import {
   adjustCursorOnNewSegment,
   getCurrRow,
+  getCurrSegment,
   getCurrSegmentLen,
   moveDown,
   moveLeft,
   moveRight,
   moveUp,
+  setCurrSegment,
   setRow,
 } from "../utils";
 
@@ -41,9 +44,25 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
     state.cursor.col = 0;
     state.content.splice(state.cursor.row + 1, 0, row);
   },
+  x: (state) => {
+    const currSegment = getCurrSegment(state);
+    state.clipboard = [[currSegment[state.cursor.col]]];
+    setCurrSegment(state, removeCharAtIndex(currSegment, state.cursor.col));
+    if (state.cursor.col === getCurrSegmentLen(state)) {
+      state.cursor.col--;
+    }
+  },
   p: (state) => {
     if (state.pasteStyle === PasteStyle.Characterwise) {
-      // TODO: Handle paste char/word
+      state.cursor.col++;
+      setCurrSegment(
+        state,
+        addStringAtIndex({
+          baseString: getCurrSegment(state),
+          stringToAdd: state.clipboard[0][0],
+          index: state.cursor.col,
+        }),
+      );
     } else if (state.pasteStyle === PasteStyle.Linewise) {
       state.content.splice(state.cursor.row + 1, 0, state.clipboard[0]);
       state.cursor = {
@@ -62,7 +81,14 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
   },
   P: (state) => {
     if (state.pasteStyle === PasteStyle.Characterwise) {
-      // TODO: Handle paste char/word
+      setCurrSegment(
+        state,
+        addStringAtIndex({
+          baseString: getCurrSegment(state),
+          stringToAdd: state.clipboard[0][0],
+          index: state.cursor.col,
+        }),
+      );
     } else if (state.pasteStyle === PasteStyle.Linewise) {
       state.content.splice(state.cursor.row, 0, state.clipboard[0]);
       state.cursor.segment = 0;
