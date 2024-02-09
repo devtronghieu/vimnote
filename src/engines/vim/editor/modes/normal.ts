@@ -135,7 +135,11 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
       state.pasteStyle = PasteStyle.Linewise;
     }
 
-    adjustCursorOnNewSegment(state);
+    state.cursor = {
+      row: state.cursor.row,
+      segment: 0,
+      col: 0,
+    };
   },
   y: (state) => {
     if (state.operator !== Operator.Copy) return;
