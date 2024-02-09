@@ -13,6 +13,7 @@ export enum Operator {
   None,
   Delete,
   Copy,
+  G, // operator starts with "g" (vim has not named it yet)
 }
 
 export enum PasteStyle {

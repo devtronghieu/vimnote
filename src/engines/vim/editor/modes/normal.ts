@@ -78,6 +78,14 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
   l: (state) => moveRight(state),
   k: (state) => moveUp(state),
   j: (state) => moveDown(state),
+  g: (state) => {
+    state.operator = Operator.G;
+  },
+  G: (state) => {
+    state.cursor.row = state.content.length - 1;
+    state.cursor.segment = getCurrRow(state).length - 1;
+    state.cursor.col = getCurrSegmentLen(state) - 1;
+  },
   d: (state) => {
     state.operator = Operator.Delete;
   },
@@ -117,5 +125,12 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
     }
 
     adjustCursorOnNewSegment(state);
+  },
+  g: (state) => {
+    state.cursor = {
+      row: 0,
+      segment: 0,
+      col: 0,
+    };
   },
 };
