@@ -45,7 +45,6 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
     if (state.pasteStyle === PasteStyle.Characterwise) {
       // TODO: Handle paste char/word
     } else if (state.pasteStyle === PasteStyle.Linewise) {
-      // TODO: Handle paste line
       state.content.splice(state.cursor.row + 1, 0, state.clipboard[0]);
       state.cursor = {
         row: state.cursor.row + 1,
@@ -53,19 +52,29 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
         col: 0,
       };
     } else if (state.pasteStyle === PasteStyle.Blockwise) {
-      // TODO: Handle paste block
+      state.content.splice(state.cursor.row + 1, 0, ...state.clipboard);
+      state.cursor = {
+        row: state.cursor.row + 1,
+        segment: 0,
+        col: 0,
+      };
     }
   },
   P: (state) => {
     if (state.pasteStyle === PasteStyle.Characterwise) {
       // TODO: Handle paste char/word
     } else if (state.pasteStyle === PasteStyle.Linewise) {
-      // TODO: Handle paste line
       state.content.splice(state.cursor.row, 0, state.clipboard[0]);
       state.cursor.segment = 0;
       state.cursor.col = 0;
     } else if (state.pasteStyle === PasteStyle.Blockwise) {
-      // TODO: Handle paste block
+      state.clipboard.push(getCurrRow(state));
+      state.content.splice(state.cursor.row, 1, ...state.clipboard);
+      state.cursor = {
+        row: state.cursor.row,
+        segment: 0,
+        col: 0,
+      };
     }
   },
   $: (state) => {
@@ -127,6 +136,21 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
     }
 
     adjustCursorOnNewSegment(state);
+  },
+  y: (state) => {
+    if (state.operator !== Operator.Copy) return;
+
+    if (state.count === 0) {
+      state.count = 1;
+    }
+
+    state.clipboard = state.content.slice(state.cursor.row, state.count);
+
+    if (state.clipboard.length > 1) {
+      state.pasteStyle = PasteStyle.Blockwise;
+    } else {
+      state.pasteStyle = PasteStyle.Linewise;
+    }
   },
   g: (state) => {
     state.cursor = {
