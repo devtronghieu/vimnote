@@ -100,6 +100,8 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
 
 export const NormalOperatorHandlers: Record<string, KeyHandler> = {
   d: (state) => {
+    if (state.operator !== Operator.Delete) return;
+
     if (state.count === 0) {
       state.count = 1;
     }
