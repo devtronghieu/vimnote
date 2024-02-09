@@ -1,6 +1,7 @@
 import { Mode } from "../../internal";
 import { KeyHandler, Operator, PasteStyle } from "../types";
 import {
+  adjustCursorOnNewSegment,
   getCurrRow,
   getCurrSegmentLen,
   moveDown,
@@ -45,6 +46,24 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
       // TODO: Handle paste char/word
     } else if (state.pasteStyle === PasteStyle.Linewise) {
       // TODO: Handle paste line
+      state.content.splice(state.cursor.row + 1, 0, state.clipboard[0]);
+      state.cursor = {
+        row: state.cursor.row + 1,
+        segment: 0,
+        col: 0,
+      };
+    } else if (state.pasteStyle === PasteStyle.Blockwise) {
+      // TODO: Handle paste block
+    }
+  },
+  P: (state) => {
+    if (state.pasteStyle === PasteStyle.Characterwise) {
+      // TODO: Handle paste char/word
+    } else if (state.pasteStyle === PasteStyle.Linewise) {
+      // TODO: Handle paste line
+      state.content.splice(state.cursor.row, 0, state.clipboard[0]);
+      state.cursor.segment = 0;
+      state.cursor.col = 0;
     } else if (state.pasteStyle === PasteStyle.Blockwise) {
       // TODO: Handle paste block
     }
@@ -71,4 +90,32 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
   },
 };
 
-export const NormalOperatorHandlers: Record<string, KeyHandler> = {};
+export const NormalOperatorHandlers: Record<string, KeyHandler> = {
+  d: (state) => {
+    if (state.count === 0) {
+      state.count = 1;
+    }
+
+    if (state.cursor.row > 0) {
+      state.clipboard = state.content.splice(state.cursor.row, state.count);
+      if (state.cursor.row === state.content.length) {
+        state.cursor.row--;
+      }
+    } else {
+      state.clipboard = state.content.splice(
+        state.cursor.row + 1,
+        state.count - 1,
+      );
+      state.clipboard.unshift(state.content[0]);
+      state.content[0] = [""];
+    }
+
+    if (state.clipboard.length > 1) {
+      state.pasteStyle = PasteStyle.Blockwise;
+    } else {
+      state.pasteStyle = PasteStyle.Linewise;
+    }
+
+    adjustCursorOnNewSegment(state);
+  },
+};
