@@ -25,7 +25,7 @@ const StatusLine: FC<Props> = ({ x, y, width, height, mode, cursor }) => {
     <Container x={x} y={y}>
       <Graphics draw={draw} />
       <Text
-        text={`${mode} - ${cursor.row}:${cursor.segment}:${cursor.col}`}
+        text={`${mode} - ${cursor.row + 1}:${cursor.segment + 1}:${cursor.col + 1}`}
         style={
           new TextStyle({
             fontSize: 16,

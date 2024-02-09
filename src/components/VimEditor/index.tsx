@@ -51,13 +51,17 @@ const VimEditor: FC<Props> = ({}) => {
   // TODO: need to optimize this scrolling behavior
   useEffect(() => {
     const currentSegmentIdx = segmentsBeforeRow + snap.cursor.segment;
-    const isVisible =
-      currentSegmentIdx >= codeViewStartFromSegment &&
-      currentSegmentIdx < codeViewStartFromSegment + maxRowsDisplayed;
+    const codeViewEndInSegment =
+      codeViewStartFromSegment + maxRowsDisplayed - 1;
 
-    if (!isVisible) {
+    const isAbove = currentSegmentIdx < codeViewStartFromSegment;
+    const isUnder = currentSegmentIdx > codeViewEndInSegment;
+
+    if (isAbove) {
+      setCodeViewStartFromSegment(currentSegmentIdx);
+    } else if (isUnder) {
       setCodeViewStartFromSegment(
-        Math.max(currentSegmentIdx - maxRowsDisplayed + 1, 0),
+        codeViewStartFromSegment + (currentSegmentIdx - codeViewEndInSegment),
       );
     }
   }, [codeViewStartFromSegment, segmentsBeforeRow, snap.cursor.segment]);
