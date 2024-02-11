@@ -32,54 +32,40 @@ export const truncateOverflow = ({
   }
 };
 
-interface SeparateWordsIncludePunctuationMarksProps {
-  baseString: string;
-  index: number;
-  numberOfWords: number;
-}
-export const separateWordsIncludePunctuationMarks = ({
-  baseString,
-  index,
-  numberOfWords,
-}: SeparateWordsIncludePunctuationMarksProps): {
-  separatedWords: string[];
-  endIndex: number;
-} => {
-  const punctuationMarks = [",", ".", ";", ":", "!", "?"];
-  const separatedWords: string[] = [];
-  let currentWord = "";
-  let endIndex = index;
-
-  while (
-    endIndex < baseString.length &&
-    separatedWords.length < numberOfWords
-  ) {
-    currentWord = baseString[endIndex];
-    const isPunc = punctuationMarks.includes(currentWord);
-    endIndex++;
-
-    if (isPunc) {
-      while (baseString[endIndex] === " ") {
-        currentWord += " ";
-        endIndex++;
-      }
-      separatedWords.push(currentWord);
-      currentWord = "";
-    } else {
-      while (!punctuationMarks.includes(baseString[endIndex])) {
-        if (baseString[endIndex] !== " " && baseString[endIndex - 1] === " ") {
-          break;
-        }
-        currentWord += baseString[endIndex];
-        endIndex++;
-      }
-      separatedWords.push(currentWord);
-      currentWord = "";
-    }
-  }
-
-  return {
-    separatedWords,
-    endIndex,
-  };
+export const isPunctuation = (char: string): boolean => {
+  const punctuationChars = [
+    ",",
+    ".",
+    ";",
+    ":",
+    "!",
+    "?",
+    "'",
+    '"',
+    "(",
+    ")",
+    "[",
+    "]",
+    "{",
+    "}",
+    "-",
+    "_",
+    "/",
+    "\\",
+    "&",
+    "|",
+    ">",
+    "<",
+    "=",
+    "+",
+    "*",
+    "%",
+    "$",
+    "#",
+    "@",
+    "~",
+    "`",
+    "^",
+  ];
+  return punctuationChars.includes(char);
 };
