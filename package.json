@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "mocha"
   },
   "dependencies": {
     "@pixi/react": "^7.1.1",
@@ -18,13 +19,17 @@
     "valtio": "^1.13.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "chai": "^5.0.3",
     "eslint": "^8",
     "eslint-config-next": "14.1.0",
     "eslint-plugin-valtio": "^0.6.2",
+    "mocha": "^10.3.0",
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
