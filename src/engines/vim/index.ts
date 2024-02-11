@@ -24,7 +24,13 @@ export const vimActions = {
     if (mode === Mode.Normal) {
       if (!isNaN(parseInt(key))) {
         vimState.count = count * 10 + parseInt(key);
+        if (vimState.operator === Operator.None) {
+          vimState.operator = Operator.Unknown;
+        }
       } else if (vimState.operator !== Operator.None) {
+        if (vimState.count === 0) {
+          vimState.count = 1;
+        }
         NormalOperatorHandlers[key] && NormalOperatorHandlers[key](vimState);
         vimState.operator = Operator.None;
         vimState.count = 0;

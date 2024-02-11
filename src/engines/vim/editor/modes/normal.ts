@@ -2,7 +2,8 @@ import { addStringAtIndex, removeCharAtIndex } from "@/utils/strings";
 import { Mode } from "../../internal";
 import { KeyHandler, Operator, PasteStyle } from "../types";
 import {
-  adjustCursorOnNewSegment,
+  findNextWord,
+  findPrevWord,
   getCurrRow,
   getCurrSegment,
   getCurrSegmentLen,
@@ -54,15 +55,15 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
   },
   p: (state) => {
     if (state.pasteStyle === PasteStyle.Characterwise) {
-      state.cursor.col++;
       setCurrSegment(
         state,
         addStringAtIndex({
           baseString: getCurrSegment(state),
           stringToAdd: state.clipboard[0][0],
-          index: state.cursor.col,
+          index: state.cursor.col + 1,
         }),
       );
+      state.cursor.col += state.clipboard[0][0].length;
     } else if (state.pasteStyle === PasteStyle.Linewise) {
       state.content.splice(state.cursor.row + 1, 0, state.clipboard[0]);
       state.cursor = {
@@ -113,6 +114,18 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
   l: (state) => moveRight(state),
   k: (state) => moveUp(state),
   j: (state) => moveDown(state),
+  b: (state) => {
+    state.cursor = findPrevWord({
+      state,
+      startCursor: state.cursor,
+    });
+  },
+  w: (state) => {
+    state.cursor = findNextWord({
+      state,
+      startCursor: state.cursor,
+    });
+  },
   g: (state) => {
     state.operator = Operator.G;
   },
@@ -137,10 +150,6 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
   d: (state) => {
     if (state.operator !== Operator.Delete) return;
 
-    if (state.count === 0) {
-      state.count = 1;
-    }
-
     if (state.cursor.row > 0) {
       state.clipboard = state.content.splice(state.cursor.row, state.count);
       if (state.cursor.row === state.content.length) {
@@ -152,7 +161,12 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
         state.count - 1,
       );
       state.clipboard.unshift(state.content[0]);
-      state.content[0] = [""];
+
+      if (state.content.length === 1) {
+        state.content[0] = [""];
+      } else {
+        state.content.splice(0, 1);
+      }
     }
 
     if (state.clipboard.length > 1) {
@@ -170,10 +184,6 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
   y: (state) => {
     if (state.operator !== Operator.Copy) return;
 
-    if (state.count === 0) {
-      state.count = 1;
-    }
-
     state.clipboard = state.content.slice(state.cursor.row, state.count);
 
     if (state.clipboard.length > 1) {
@@ -188,5 +198,21 @@ export const NormalOperatorHandlers: Record<string, KeyHandler> = {
       segment: 0,
       col: 0,
     };
+  },
+  b: (state) => {
+    for (let i = 0; i < state.count; i++) {
+      state.cursor = findPrevWord({
+        state,
+        startCursor: state.cursor,
+      });
+    }
+  },
+  w: (state) => {
+    for (let i = 0; i < state.count; i++) {
+      state.cursor = findNextWord({
+        state,
+        startCursor: state.cursor,
+      });
+    }
   },
 };

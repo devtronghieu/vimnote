@@ -1,6 +1,6 @@
-import { addStringAtIndex } from "@/utils/strings";
+import { addStringAtIndex, isPunctuation } from "@/utils/strings";
 import { Mode } from "../internal";
-import { Operator, PasteStyle, VimEditorState } from "./types";
+import { CursorPosition, Operator, PasteStyle, VimEditorState } from "./types";
 
 export function createVimEditorState(): VimEditorState {
   return {
@@ -93,6 +93,105 @@ export function moveDown(state: VimEditorState): void {
   }
 }
 
+interface FindWordProps {
+  state: VimEditorState;
+  startCursor: CursorPosition;
+}
+// TODO: take time to refactor this func
+export function findNextWord({
+  state,
+  startCursor,
+}: FindWordProps): CursorPosition {
+  const rowContent = state.content[startCursor.row].join("");
+  let nextWordIndex =
+    startCursor.segment * state.maxCharsPerRow + startCursor.col + 1;
+
+  while (
+    rowContent[nextWordIndex] !== " " &&
+    nextWordIndex < rowContent.length
+  ) {
+    if (isPunctuation(rowContent[nextWordIndex])) {
+      return {
+        row: startCursor.row,
+        segment: Math.floor(nextWordIndex / state.maxCharsPerRow),
+        col: nextWordIndex % state.maxCharsPerRow,
+      };
+    } else {
+      nextWordIndex++;
+    }
+  }
+
+  while (rowContent[nextWordIndex] === " ") {
+    nextWordIndex++;
+  }
+
+  if (nextWordIndex === -1 || nextWordIndex >= rowContent.length) {
+    if (state.cursor.row < state.content.length - 1) {
+      return {
+        row: state.cursor.row + 1,
+        segment: 0,
+        col: 0,
+      };
+    } else return startCursor;
+  } else {
+    return {
+      row: startCursor.row,
+      segment: Math.floor(nextWordIndex / state.maxCharsPerRow),
+      col: nextWordIndex % state.maxCharsPerRow,
+    };
+  }
+}
+
+export const findPrevWord = ({
+  state,
+  startCursor,
+}: FindWordProps): CursorPosition => {
+  if (startCursor.col === 0 && startCursor.segment === 0) {
+    if (startCursor.row === 0) {
+      return startCursor;
+    } else {
+      startCursor.row--;
+      startCursor.segment = state.content[startCursor.row].length - 1;
+      startCursor.col =
+        state.content[startCursor.row][startCursor.segment].length - 1;
+    }
+  }
+
+  let rowContent = state.content[startCursor.row].join("");
+  let nextWordIndex =
+    startCursor.segment * state.maxCharsPerRow + startCursor.col - 1;
+
+  while (rowContent[nextWordIndex] === " " && nextWordIndex > 0) {
+    nextWordIndex--;
+  }
+
+  while (rowContent[nextWordIndex] !== " ") {
+    if (isPunctuation(rowContent[nextWordIndex])) {
+      return {
+        row: startCursor.row,
+        segment: Math.floor(nextWordIndex / state.maxCharsPerRow),
+        col: nextWordIndex % state.maxCharsPerRow,
+      };
+    }
+
+    if (nextWordIndex > 0) {
+      nextWordIndex--;
+    } else {
+      return {
+        row: startCursor.row,
+        segment: 0,
+        col: 0,
+      };
+    }
+  }
+
+  return {
+    row: startCursor.row,
+    segment: Math.floor(nextWordIndex / state.maxCharsPerRow),
+    col: (nextWordIndex % state.maxCharsPerRow) + 1,
+  };
+};
+
 export function isContentEmpty(state: VimEditorState) {
   if (state.content.length > 1) {
     return false;
@@ -103,6 +202,22 @@ export function isContentEmpty(state: VimEditorState) {
   }
 
   if (state.content[0][0].length > 0) {
+    return false;
+  }
+
+  return true;
+}
+
+export function isEndOfFile(state: VimEditorState, cursor: CursorPosition) {
+  if (cursor.row !== state.content.length - 1) {
+    return false;
+  }
+
+  if (cursor.segment !== state.content[cursor.row].length - 1) {
+    return false;
+  }
+
+  if (cursor.col !== state.content[cursor.row][cursor.segment].length - 1) {
     return false;
   }
 

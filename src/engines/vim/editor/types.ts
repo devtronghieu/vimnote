@@ -11,6 +11,7 @@ export interface CursorPosition {
 
 export enum Operator {
   None,
+  Unknown,
   Delete,
   Copy,
   G, // operator starts with "g" (vim has not named it yet)
