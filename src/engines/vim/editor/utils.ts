@@ -96,11 +96,13 @@ export function moveDown(state: VimEditorState): void {
 interface FindWordProps {
   state: VimEditorState;
   startCursor: CursorPosition;
+  treatPuncAsWord?: boolean;
 }
 // TODO: take time to refactor this func
 export function findNextWord({
   state,
   startCursor,
+  treatPuncAsWord = true,
 }: FindWordProps): CursorPosition {
   const rowContent = state.content[startCursor.row].join("");
   let nextWordIndex =
@@ -110,7 +112,7 @@ export function findNextWord({
     rowContent[nextWordIndex] !== " " &&
     nextWordIndex < rowContent.length
   ) {
-    if (isPunctuation(rowContent[nextWordIndex])) {
+    if (treatPuncAsWord && isPunctuation(rowContent[nextWordIndex])) {
       return {
         row: startCursor.row,
         segment: Math.floor(nextWordIndex / state.maxCharsPerRow),
@@ -145,6 +147,7 @@ export function findNextWord({
 export const findPrevWord = ({
   state,
   startCursor,
+  treatPuncAsWord = true,
 }: FindWordProps): CursorPosition => {
   if (startCursor.col === 0 && startCursor.segment === 0) {
     if (startCursor.row === 0) {
@@ -166,7 +169,7 @@ export const findPrevWord = ({
   }
 
   while (rowContent[nextWordIndex] !== " ") {
-    if (isPunctuation(rowContent[nextWordIndex])) {
+    if (treatPuncAsWord && isPunctuation(rowContent[nextWordIndex])) {
       return {
         row: startCursor.row,
         segment: Math.floor(nextWordIndex / state.maxCharsPerRow),

@@ -120,10 +120,24 @@ export const NormalKeyHandlers: Record<string, KeyHandler> = {
       startCursor: state.cursor,
     });
   },
+  B: (state) => {
+    state.cursor = findPrevWord({
+      state,
+      startCursor: state.cursor,
+      treatPuncAsWord: false,
+    });
+  },
   w: (state) => {
     state.cursor = findNextWord({
       state,
       startCursor: state.cursor,
+    });
+  },
+  W: (state) => {
+    state.cursor = findNextWord({
+      state,
+      startCursor: state.cursor,
+      treatPuncAsWord: false,
     });
   },
   g: (state) => {
